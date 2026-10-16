@@ -144,6 +144,89 @@
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); animation: pulse 2.4s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
+
+  /* ---------- the demo card ---------- */
+  .bar-text { min-width: 0; }
+  .app-sub { display: block; }
+  .back {
+    width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+    background: #1a2430; border: 1px solid #2b3540; cursor: pointer;
+    display: grid; place-items: center; padding: 0;
+  }
+  .back svg { width: 18px; height: 18px; fill: #b9c2cd; }
+  .back:hover { background: #22303f; }
+
+  /* A row is a button now: the whole demo turns on someone tapping one. */
+  .row {
+    width: 100%; text-align: left; cursor: pointer;
+    font: inherit; color: inherit; border: 0; border-left: 3px solid var(--brand);
+  }
+  .row:hover { background: #18222d; }
+  .row:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .row .meta { flex: 1 1 auto; min-width: 0; }
+  /* The state had been pushed out of its row by a long driver line, so it
+     printed on top of the text beside it. It has its own column now. */
+  .row .state { flex: 0 0 auto; margin-left: 0; text-align: right; white-space: nowrap; }
+
+  .tap-hint {
+    padding: 0 14px 14px; margin: 0;
+    font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #55616e;
+  }
+
+  /* one camera channel */
+  .camera { position: relative; aspect-ratio: 16 / 9; background: #05080b; overflow: hidden; }
+  .camera .road { width: 100%; height: 100%; display: block; }
+  .dashes { animation: run 1.1s linear infinite; }
+  @keyframes run { from { transform: translateY(-26px); } to { transform: translateY(0); } }
+  .cam-top, .cam-bottom {
+    position: absolute; left: 0; right: 0; display: flex; align-items: center;
+    justify-content: space-between; padding: 7px 9px; pointer-events: none;
+  }
+  .cam-top { top: 0; }
+  .cam-bottom { bottom: 0; }
+  .chip {
+    font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.1em;
+    padding: 3px 6px; border-radius: 4px; background: rgba(5,8,11,0.6); color: #dfe6ea;
+  }
+  .chip.rec { color: #ff8585; display: inline-flex; align-items: center; gap: 4px; }
+  .rec-dot { width: 6px; height: 6px; border-radius: 50%; background: #ff3b30; animation: pulse 1.4s ease-in-out infinite; }
+  .chip.hd { background: var(--brand); color: var(--brand-ink); transition: background 0.25s ease; }
+  .stamp { font-family: var(--mono); font-size: 0.58rem; color: #dfe6ea; text-shadow: 0 1px 3px #000; }
+
+  .channels { display: flex; gap: 6px; padding: 9px 10px 4px; }
+  .channels button {
+    flex: 1; padding: 6px 0; border-radius: 7px; cursor: pointer;
+    background: #121a23; border: 1px solid #22303f; color: #8b97a4;
+    font-family: var(--mono); font-size: 0.64rem;
+  }
+  .channels button.on { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); }
+  .channels button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  /* and where it is */
+  .minimap { position: relative; margin: 8px 10px 0; border-radius: 10px; overflow: hidden; border: 1px solid #1e2833; }
+  .minimap svg { display: block; width: 100%; height: auto; }
+  .pin {
+    position: absolute; top: 0; left: 0; width: 11px; height: 11px; border-radius: 50%;
+    background: var(--brand); border: 2px solid #0f141b;
+    offset-path: path("M8 112 C 70 100, 96 70, 150 60 S 250 36, 312 20");
+    offset-distance: 0%; offset-rotate: 0deg;
+    animation: drive 11s linear infinite;
+    transition: background 0.25s ease;
+  }
+  @keyframes drive { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+  .road-label {
+    position: absolute; left: 8px; bottom: 7px;
+    font-family: var(--mono); font-size: 0.56rem; letter-spacing: 0.1em;
+    color: #8b97a4; background: rgba(15,20,27,0.78); padding: 2px 6px; border-radius: 4px;
+  }
+
+  .readout { display: flex; gap: 1px; margin: 10px 10px 12px; background: #1e2833; border-radius: 9px; overflow: hidden; }
+  .readout div { flex: 1; background: #121a23; padding: 8px 9px; }
+  .readout .k { display: block; font-family: var(--mono); font-size: 0.54rem; letter-spacing: 0.1em; text-transform: uppercase; color: #6f7d8c; }
+  .readout .v { display: block; margin-top: 3px; font-size: 0.78rem; font-weight: 600; color: var(--paper); }
+  .readout .v.on { color: var(--ok); }
+
   /* ---------- sections ---------- */
   section { padding-block: clamp(52px, 8vw, 96px); }
   .section-head { max-width: 62ch; }
@@ -231,38 +314,99 @@
       </div>
     </div>
 
-    <div class="device" aria-hidden="true">
+    <div class="device">
       <div class="screen">
-        <div class="app-bar">
-          <span class="app-icon">
-            <svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
-          </span>
-          <span>
-            <span class="app-name" id="mockName">Your Fleet</span>
-            <span class="app-sub" style="display:block">Tracking &amp; live video</span>
-          </span>
-          <span class="live-dot" style="margin-left:auto"></span>
+        <!-- Pane one: the fleet. Each row is a button, because the whole point
+             of this demo is that a visitor taps one. -->
+        <div id="paneList">
+          <div class="app-bar">
+            <span class="app-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+            </span>
+            <span class="bar-text">
+              <span class="app-name" id="mockName">Your Fleet</span>
+              <span class="app-sub">Tracking &amp; live video</span>
+            </span>
+            <span class="live-dot"></span>
+          </div>
+          <div class="rows" id="rows"></div>
+          <p class="tap-hint">Tap a vehicle</p>
         </div>
-        <div class="rows">
-          <div class="row">
-            <span class="plate"><span class="band">UK</span><span class="no">PJ19 FBK</span></span>
-            <span class="meta"><span class="who">A. Singh · driving</span></span>
-            <span class="state">2h09 to break</span>
+
+        <!-- Pane two: one vehicle - a camera channel and where it is. -->
+        <div id="paneVehicle" hidden>
+          <div class="app-bar">
+            <button class="back" id="backBtn" type="button" aria-label="Back to vehicles">
+              <svg viewBox="0 0 24 24"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4-4.6-4.6z"/></svg>
+            </button>
+            <span class="bar-text">
+              <span class="app-name" id="vehName">PJ19 FBK</span>
+              <span class="app-sub" id="vehSub">A. Singh · driving</span>
+            </span>
+            <span class="live-dot"></span>
           </div>
-          <div class="row">
-            <span class="plate"><span class="band">UK</span><span class="no">G14 PRB</span></span>
-            <span class="meta"><span class="who">4 cameras live</span></span>
-            <span class="state warn">A45 6km ahead</span>
+
+          <div class="camera">
+            <svg class="road" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <defs>
+                <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#243445"/><stop offset="1" stop-color="#3d5168"/>
+                </linearGradient>
+                <linearGradient id="tar" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#2a2f36"/><stop offset="1" stop-color="#13161a"/>
+                </linearGradient>
+              </defs>
+              <rect width="320" height="76" fill="url(#sky)"/>
+              <rect y="76" width="320" height="104" fill="#1d2a1f"/>
+              <polygon points="150,76 170,76 300,180 20,180" fill="url(#tar)"/>
+              <polygon points="150,76 152,76 70,180 40,180" fill="#8b9099" opacity="0.5"/>
+              <polygon points="168,76 170,76 280,180 250,180" fill="#8b9099" opacity="0.5"/>
+              <g class="dashes">
+                <rect x="158" y="80" width="3" height="10" rx="1" fill="#e8e4d8"/>
+                <rect x="157" y="100" width="4" height="14" rx="1" fill="#e8e4d8"/>
+                <rect x="156" y="126" width="6" height="18" rx="1" fill="#e8e4d8"/>
+                <rect x="154" y="158" width="8" height="24" rx="1" fill="#e8e4d8"/>
+              </g>
+              <rect x="196" y="58" width="42" height="20" rx="2" fill="#1f5f6b" opacity="0.85"/>
+              <rect x="200" y="62" width="34" height="3" rx="1.5" fill="#dfe6ea" opacity="0.8"/>
+              <rect x="200" y="69" width="22" height="3" rx="1.5" fill="#dfe6ea" opacity="0.6"/>
+            </svg>
+            <div class="cam-top">
+              <span class="chip ch">CH1 · FORWARD</span>
+              <span class="chip rec"><span class="rec-dot"></span>REC</span>
+            </div>
+            <div class="cam-bottom">
+              <span class="stamp" id="camStamp">--:--:--</span>
+              <span class="chip hd">HD</span>
+            </div>
           </div>
-          <div class="row offline">
-            <span class="plate"><span class="band">UK</span><span class="no">NX71 SCZ</span></span>
-            <span class="meta"><span class="who">Depot · ignition off</span></span>
-            <span class="state">Parked</span>
+
+          <div class="channels" id="channels">
+            <button type="button" class="on">1</button>
+            <button type="button">2</button>
+            <button type="button">3</button>
+            <button type="button">4</button>
           </div>
-          <div class="row">
-            <span class="plate"><span class="band">UK</span><span class="no">AV26 HWY</span></span>
-            <span class="meta"><span class="who">Walkaround passed 06:12</span></span>
-            <span class="state">Running</span>
+
+          <div class="minimap">
+            <svg viewBox="0 0 320 128" aria-hidden="true">
+              <rect width="320" height="128" fill="#0f141b"/>
+              <g stroke="#1e2833" stroke-width="1">
+                <path d="M0 34 H320 M0 94 H320 M74 0 V128 M196 0 V128"/>
+              </g>
+              <path d="M8 112 C 70 100, 96 70, 150 60 S 250 36, 312 20" fill="none"
+                    stroke="#2b3b4c" stroke-width="9" stroke-linecap="round"/>
+              <path id="routeLine" d="M8 112 C 70 100, 96 70, 150 60 S 250 36, 312 20" fill="none"
+                    stroke="var(--brand)" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+            </svg>
+            <span class="pin" id="mapPin"></span>
+            <span class="road-label">A2 · eastbound</span>
+          </div>
+
+          <div class="readout">
+            <div><span class="k">Speed</span><span class="v" id="vSpeed">54 mph</span></div>
+            <div><span class="k">Ignition</span><span class="v on">On</span></div>
+            <div><span class="k">To break</span><span class="v" id="vBreak">2h 09m</span></div>
           </div>
         </div>
       </div>
@@ -311,6 +455,11 @@
         <span class="num">06</span>
         <h3>The dull, necessary parts</h3>
         <p>MOT and tax dates, maintenance reminders, clean-air zone charges, customer accounts and invoicing. The things that make it a business tool rather than a demo.</p>
+      </div>
+      <div class="cap">
+        <span class="num">07</span>
+        <h3>Fully remote support plans</h3>
+        <p>Ongoing support delivered entirely remotely \u2014 commissioning units, configuring cameras and tachograph links, diagnosing a vehicle that has stopped reporting, and keeping the platform patched. No site visits to schedule and nobody to put on your payroll.</p>
       </div>
     </div>
   </div>
@@ -372,6 +521,7 @@
           <tr><th>Apps</th><td>Progressive web app plus native builds for the App Store and Play Store, published under your developer account in your name.</td></tr>
           <tr><th>Compliance</th><td>Built for UK and EU drivers' hours rules: EU 561/2006 limits, driver-card and vehicle-unit downloads, infringement reporting.</td></tr>
           <tr><th>Support</th><td>You support your customers. We support you — one technical contact, not a ticket queue.</td></tr>
+          <tr><th>Remote support plans</th><td>Fully remote plans covering commissioning, device configuration, fault diagnosis and platform maintenance — monthly, with a named contact. Taken by most licensees instead of hiring for it.</td></tr>
           <tr><th>What we keep</th><td>The platform's intellectual property remains with Infomac Solutions. Your brand, your customers and your data remain yours.</td></tr>
         </tbody>
       </table>
@@ -435,6 +585,71 @@
     swatches.addEventListener('click', (e) => {
       const button = e.target.closest('button[data-colour]');
       if (button) applyColour(button.dataset.colour);
+    });
+
+
+    // The fleet in the demo, kept as data so the list and the vehicle screen
+    // cannot drift apart.
+    const FLEET = [
+      { plate: 'PJ19 FBK', who: 'A. Singh \u00b7 driving', state: '2h09 to break', kind: 'ok',
+        sub: 'A. Singh \u00b7 driving', speed: '54 mph', brk: '2h 09m', road: 'A2 \u00b7 eastbound' },
+      { plate: 'G14 PRB', who: '4 cameras live', state: 'A45 6km ahead', kind: 'warn',
+        sub: '4 cameras \u00b7 roadworks ahead', speed: '48 mph', brk: '4h 30m', road: 'A45 \u00b7 eastbound' },
+      { plate: 'NX71 SCZ', who: 'Depot \u00b7 ignition off', state: 'Parked', kind: 'off',
+        sub: 'Depot \u00b7 ignition off', speed: '0 mph', brk: 'Resting', road: 'Yard \u00b7 Dartford' },
+      { plate: 'AV26 HWY', who: 'Walkaround passed', state: 'Running', kind: 'ok',
+        sub: 'Walkaround passed 06:12', speed: '41 mph', brk: '3h 48m', road: 'M20 \u00b7 westbound' },
+    ];
+
+    const rowsEl = document.getElementById('rows');
+    const paneList = document.getElementById('paneList');
+    const paneVehicle = document.getElementById('paneVehicle');
+    const CHANNEL_NAMES = ['FORWARD', 'CAB', 'REAR', 'NEARSIDE'];
+
+    rowsEl.innerHTML = FLEET.map(function (v, i) {
+      return '<button class="row' + (v.kind === 'off' ? ' offline' : '') + '" type="button" data-i="' + i + '">'
+        + '<span class="plate"><span class="band">UK</span><span class="no">' + v.plate + '</span></span>'
+        + '<span class="meta"><span class="who">' + v.who + '</span></span>'
+        + '<span class="state' + (v.kind === 'warn' ? ' warn' : '') + '">' + v.state + '</span>'
+        + '</button>';
+    }).join('');
+
+    let clock = null;
+    const showVehicle = function (v) {
+      document.getElementById('vehName').textContent = v.plate;
+      document.getElementById('vehSub').textContent = v.sub;
+      document.getElementById('vSpeed').textContent = v.speed;
+      document.getElementById('vBreak').textContent = v.brk;
+      document.querySelector('.road-label').textContent = v.road;
+      paneList.hidden = true;
+      paneVehicle.hidden = false;
+      document.getElementById('backBtn').focus();
+      // A timestamp that moves is what makes a drawn frame read as a camera.
+      const stamp = document.getElementById('camStamp');
+      const tick = function () { stamp.textContent = new Date().toLocaleTimeString('en-GB'); };
+      tick();
+      clock = setInterval(tick, 1000);
+    };
+
+    rowsEl.addEventListener('click', function (e) {
+      const button = e.target.closest('.row');
+      if (button) showVehicle(FLEET[Number(button.dataset.i)]);
+    });
+
+    document.getElementById('backBtn').addEventListener('click', function () {
+      clearInterval(clock);
+      paneVehicle.hidden = true;
+      paneList.hidden = false;
+    });
+
+    document.getElementById('channels').addEventListener('click', function (e) {
+      const button = e.target.closest('button');
+      if (!button) return;
+      Array.prototype.forEach.call(e.currentTarget.children, function (b) {
+        b.classList.toggle('on', b === button);
+      });
+      const n = Number(button.textContent);
+      document.querySelector('.chip.ch').textContent = 'CH' + n + ' \u00b7 ' + CHANNEL_NAMES[n - 1];
     });
 
     applyName();
