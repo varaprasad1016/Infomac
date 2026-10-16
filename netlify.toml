@@ -1,0 +1,23 @@
+# Static site: nothing to build, publish the repository root as it stands.
+[build]
+  publish = "."
+  command = ""
+
+# The video and icon are content-addressed by name and change rarely; the page
+# itself must not be cached hard, or an edit takes a day to appear.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

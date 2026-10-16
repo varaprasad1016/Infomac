@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infomac Solutions — white-label fleet software</title>
+<meta name="description" content="A complete fleet tracking, dashcam and tachograph compliance platform, licensed under your own name. Infomac Solutions builds the software; you sell it.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ink: #0b0e12;
+    --ink-soft: #1a212b;
+    --paper: #f4f2ed;
+    --paper-dim: #e4e0d6;
+    --steel: #5d6b7a;
+    --rule: #cfcabd;
+    --accent: #1f5f6b;          /* Infomac's own mark: workshop teal, not a startup purple */
+    --brand: #5b4bff;           /* the licensee's colour — the thing that changes */
+    --brand-ink: #ffffff;
+    --ok: #1f9d55;
+    --warn: #d98324;
+    --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+    --body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { animation: none !important; transition: none !important; }
+  }
+
+  .wrap { width: 100%; max-width: 1140px; margin: 0 auto; padding-inline: 20px; }
+
+  h1, h2, h3 { font-family: var(--display); font-weight: 800; letter-spacing: -0.02em; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.3rem, 6vw, 4.1rem); line-height: 1.02; }
+  h2 { font-size: clamp(1.6rem, 3.4vw, 2.4rem); line-height: 1.1; }
+  h3 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; }
+  p { margin: 0; }
+  a { color: inherit; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--steel);
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(244, 242, 237, 0.88);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .masthead .wrap { display: flex; align-items: center; gap: 16px; padding-block: 14px; }
+  .mark { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; letter-spacing: -0.02em; }
+  .mark .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .masthead nav { margin-left: auto; display: flex; gap: 22px; font-size: 0.92rem; }
+  .masthead nav a { text-decoration: none; color: var(--steel); }
+  .masthead nav a:hover { color: var(--ink); }
+  @media (max-width: 720px) { .masthead nav { display: none; } }
+
+  /* ---------- hero ---------- */
+  .hero { background: var(--ink); color: var(--paper); padding-block: clamp(48px, 8vw, 92px); }
+  .hero .grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
+  @media (max-width: 920px) { .hero .grid { grid-template-columns: 1fr; } }
+  .hero h1 { color: var(--paper); }
+  .hero h1 em { font-style: normal; color: var(--brand); transition: color 0.25s ease; }
+  .lede { margin-top: 20px; font-size: 1.12rem; color: #b9c2cd; max-width: 46ch; }
+
+  /* ---------- the rebrand console ---------- */
+  .console {
+    margin-top: 30px; padding: 18px;
+    border: 1px solid #2b3540; border-radius: 12px;
+    background: #121820;
+  }
+  .console .label { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: #7d8b9a; }
+  .console input[type="text"] {
+    width: 100%; margin-top: 8px; padding: 11px 13px;
+    background: #0b1016; color: var(--paper);
+    border: 1px solid #2b3540; border-radius: 8px;
+    font-family: var(--body); font-size: 1rem;
+  }
+  .console input[type="text"]:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+  .swatches { display: flex; gap: 9px; margin-top: 14px; flex-wrap: wrap; }
+  .swatches button {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer; padding: 0;
+  }
+  .swatches button[aria-pressed="true"] { border-color: var(--paper); }
+  .swatches button:focus-visible { outline: 2px solid var(--paper); outline-offset: 2px; }
+  .hint { margin-top: 12px; font-size: 0.86rem; color: #7d8b9a; }
+
+  /* ---------- device mock ---------- */
+  .device {
+    width: 100%; max-width: 330px; margin-inline: auto;
+    border-radius: 30px; padding: 11px;
+    background: #05080b; border: 1px solid #2b3540;
+    box-shadow: 0 30px 70px rgba(0,0,0,0.45);
+  }
+  .screen { border-radius: 22px; overflow: hidden; background: #0d1219; }
+  .app-bar { display: flex; align-items: center; gap: 10px; padding: 14px 14px 12px; }
+  .app-icon {
+    width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
+    background: var(--brand); display: grid; place-items: center;
+    transition: background 0.25s ease;
+  }
+  .app-icon svg { width: 18px; height: 18px; fill: var(--brand-ink); }
+  .app-name { font-family: var(--display); font-weight: 800; font-size: 1rem; color: var(--paper); letter-spacing: -0.01em; }
+  .app-sub { font-size: 0.68rem; color: #6f7d8c; }
+  .rows { padding: 4px 10px 14px; display: flex; flex-direction: column; gap: 7px; }
+  .row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px; border-radius: 10px;
+    background: #121a23; border-left: 3px solid var(--brand);
+    transition: border-color 0.25s ease;
+  }
+  .row.offline { border-left-color: #3b4756; }
+  .plate {
+    display: inline-flex; align-items: stretch; border-radius: 3px; overflow: hidden;
+    border: 1px solid #000; background: #f5cd2f; line-height: 1; flex-shrink: 0;
+  }
+  .plate .band { background: #15489f; color: #fff; font-size: 0.42rem; font-weight: 700; padding: 3px 2px 2px; display: flex; align-items: flex-end; }
+  .plate .no { color: #0f1115; font-weight: 700; font-size: 0.74rem; letter-spacing: 0.06em; padding: 3px 5px 2px; font-family: 'Arial Narrow', Arial, sans-serif; }
+  .row .meta { min-width: 0; }
+  .row .who { font-size: 0.72rem; color: #9aa7b4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .state { margin-left: auto; font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ok); }
+  .row.offline .state { color: #5d6b7a; }
+  .row .state.warn { color: var(--warn); }
+  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  /* ---------- sections ---------- */
+  section { padding-block: clamp(52px, 8vw, 96px); }
+  .section-head { max-width: 62ch; }
+  .section-head h2 { margin-top: 10px; }
+  .section-head p { margin-top: 14px; color: #4a5560; }
+
+  .capabilities { display: grid; grid-template-columns: repeat(auto-fit, minmax(258px, 1fr)); gap: 1px; margin-top: 38px; background: var(--rule); border: 1px solid var(--rule); }
+  .cap { background: var(--paper); padding: 24px 22px; }
+  .cap .num { font-family: var(--mono); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.1em; }
+  .cap h3 { margin-top: 10px; }
+  .cap p { margin-top: 8px; font-size: 0.93rem; color: #4a5560; }
+
+  .band { background: var(--ink); color: var(--paper); }
+  .band .section-head p { color: #b9c2cd; }
+  .band .eyebrow { color: #7d8b9a; }
+
+  figure { margin: 0; }
+  .video-frame {
+    margin-top: 36px; border-radius: 14px; overflow: hidden;
+    border: 1px solid #2b3540; background: #05080b;
+  }
+  .video-frame video { display: block; width: 100%; height: auto; }
+  figcaption { margin-top: 12px; font-size: 0.88rem; color: #7d8b9a; }
+
+  .steps { counter-reset: step; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px; margin-top: 38px; }
+  .step { border-top: 2px solid var(--accent); padding-top: 16px; }
+  .step .n { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; color: var(--accent); }
+  .step h3 { margin-top: 8px; }
+  .step p { margin-top: 8px; font-size: 0.93rem; color: #4a5560; }
+
+  .spec { width: 100%; border-collapse: collapse; margin-top: 32px; font-size: 0.93rem; }
+  .spec th, .spec td { text-align: left; padding: 13px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .spec th { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--steel); font-weight: 500; width: 34%; }
+  .scroll-x { overflow-x: auto; }
+
+  .cta { display: inline-flex; align-items: center; gap: 10px; margin-top: 26px; padding: 13px 22px; border-radius: 8px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; }
+  .cta:hover { background: #17474f; }
+  .band .cta { background: var(--paper); color: var(--ink); }
+  .band .cta:hover { background: #fff; }
+
+  footer { border-top: 1px solid var(--rule); padding-block: 40px; font-size: 0.88rem; color: var(--steel); }
+  footer .wrap { display: flex; gap: 18px; flex-wrap: wrap; align-items: baseline; }
+  footer .legal { margin-left: auto; }
+  @media (max-width: 620px) { footer .legal { margin-left: 0; } }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <span class="mark"><span class="dot"></span>Infomac Solutions</span>
+    <nav>
+      <a href="#platform">Platform</a>
+      <a href="#see-it">See it</a>
+      <a href="#licensing">Licensing</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap grid">
+    <div>
+      <span class="eyebrow">White-label fleet software</span>
+      <h1 style="margin-top:16px">Sell fleet software under <em id="heroName">your own name</em>.</h1>
+      <p class="lede">
+        A complete tracking, dashcam and tachograph compliance platform — built, hosted and
+        maintained by us, sold as yours. No development team, no licence per seat, no mention
+        of anyone else on the screen.
+      </p>
+
+      <div class="console">
+        <label class="label" for="brandName">Try it — your brand</label>
+        <input id="brandName" type="text" value="Your Fleet" maxlength="22" autocomplete="off" spellcheck="false">
+        <div class="label" style="margin-top:16px">Your colour</div>
+        <div class="swatches" id="swatches" role="group" aria-label="Brand colour">
+          <button type="button" data-colour="#5b4bff" style="background:#5b4bff" aria-label="Indigo" aria-pressed="true"></button>
+          <button type="button" data-colour="#0f9d58" style="background:#0f9d58" aria-label="Green" aria-pressed="false"></button>
+          <button type="button" data-colour="#d93025" style="background:#d93025" aria-label="Red" aria-pressed="false"></button>
+          <button type="button" data-colour="#e8873a" style="background:#e8873a" aria-label="Orange" aria-pressed="false"></button>
+          <button type="button" data-colour="#1f5f6b" style="background:#1f5f6b" aria-label="Teal" aria-pressed="false"></button>
+          <button type="button" data-colour="#111418" style="background:#111418" aria-label="Black" aria-pressed="false"></button>
+        </div>
+        <p class="hint">That is the whole of it. Name, colour, icon, domain — the rest of the platform is already built.</p>
+      </div>
+    </div>
+
+    <div class="device" aria-hidden="true">
+      <div class="screen">
+        <div class="app-bar">
+          <span class="app-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>
+          </span>
+          <span>
+            <span class="app-name" id="mockName">Your Fleet</span>
+            <span class="app-sub" style="display:block">Tracking &amp; live video</span>
+          </span>
+          <span class="live-dot" style="margin-left:auto"></span>
+        </div>
+        <div class="rows">
+          <div class="row">
+            <span class="plate"><span class="band">UK</span><span class="no">PJ19 FBK</span></span>
+            <span class="meta"><span class="who">A. Singh · driving</span></span>
+            <span class="state">2h09 to break</span>
+          </div>
+          <div class="row">
+            <span class="plate"><span class="band">UK</span><span class="no">G14 PRB</span></span>
+            <span class="meta"><span class="who">4 cameras live</span></span>
+            <span class="state warn">A45 6km ahead</span>
+          </div>
+          <div class="row offline">
+            <span class="plate"><span class="band">UK</span><span class="no">NX71 SCZ</span></span>
+            <span class="meta"><span class="who">Depot · ignition off</span></span>
+            <span class="state">Parked</span>
+          </div>
+          <div class="row">
+            <span class="plate"><span class="band">UK</span><span class="no">AV26 HWY</span></span>
+            <span class="meta"><span class="who">Walkaround passed 06:12</span></span>
+            <span class="state">Running</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section id="platform">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">What you are licensing</span>
+      <h2>One platform, not a map with extras bolted on.</h2>
+      <p>
+        Every part of this runs in production today for a UK haulage operator — lorries,
+        cameras, tachographs and drivers. You are licensing working software, not a roadmap.
+      </p>
+    </div>
+
+    <div class="capabilities">
+      <div class="cap">
+        <span class="num">01</span>
+        <h3>Live tracking</h3>
+        <p>Positions, ignition, speed and journeys from the vehicle's own unit. Geofences, trips, mileage and the reports a transport office actually runs.</p>
+      </div>
+      <div class="cap">
+        <span class="num">02</span>
+        <h3>Dashcam video</h3>
+        <p>Multi-channel live view and playback straight from the vehicle's recorder, with clip download for an insurer — over the ordinary web port, so it works on a locked-down office network.</p>
+      </div>
+      <div class="cap">
+        <span class="num">03</span>
+        <h3>Tachograph compliance</h3>
+        <p>Driver hours read live from the tachograph — time to break, left today, left this week — alongside the archive of downloaded driver-card and vehicle-unit files, parsed into activities and infringements.</p>
+      </div>
+      <div class="cap">
+        <span class="num">04</span>
+        <h3>Driver's phone app</h3>
+        <p>Walkaround checks with photographs, shift start and end, jobs with one-tap navigation, defects and paperwork — the office sees it the moment it happens.</p>
+      </div>
+      <div class="cap">
+        <span class="num">05</span>
+        <h3>Road disruption</h3>
+        <p>Live closures and roadworks from National Highways on the map, and a warning when a lorry is approaching one on its own heading — before it is sitting in the queue.</p>
+      </div>
+      <div class="cap">
+        <span class="num">06</span>
+        <h3>The dull, necessary parts</h3>
+        <p>MOT and tax dates, maintenance reminders, clean-air zone charges, customer accounts and invoicing. The things that make it a business tool rather than a demo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="see-it">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">See it working</span>
+      <h2>The platform, recorded on a live fleet.</h2>
+      <p>Unbranded throughout. What a customer sees is whatever you decide to call it.</p>
+    </div>
+    <figure>
+      <div class="video-frame">
+        <video controls playsinline preload="metadata" poster="">
+          <source src="assets/platform-demo.mp4" type="video/mp4">
+          Your browser cannot play this video.
+        </video>
+      </div>
+      <figcaption>Live tracking, multi-channel camera view, playback and clip download.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="licensing">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">How licensing works</span>
+      <h2>You sell and support. We build and run.</h2>
+      <p>
+        The arrangement is deliberately simple, because the complicated version is how
+        white-label deals go wrong.
+      </p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <span class="n">STEP 01</span>
+        <h3>Your identity</h3>
+        <p>Name, colours, icon and domain. Applied across the web app, the driver app and the store listings — not a logo dropped into someone else's product.</p>
+      </div>
+      <div class="step">
+        <span class="n">STEP 02</span>
+        <h3>Your deployment</h3>
+        <p>Your own instance and database. Your customers' data never sits beside another licensee's, and you decide where it lives.</p>
+      </div>
+      <div class="step">
+        <span class="n">STEP 03</span>
+        <h3>Your customers</h3>
+        <p>You hold the relationship, set the pricing and bill them. We never appear in front of them, and we do not sell into your market.</p>
+      </div>
+    </div>
+
+    <div class="scroll-x">
+      <table class="spec">
+        <tbody>
+          <tr><th>Hardware</th><td>Works with the trackers and camera recorders already common in UK haulage — Teltonika professional units and 4G multi-channel DVRs. No hardware lock-in and no reseller margin taken on devices you buy.</td></tr>
+          <tr><th>Deployment</th><td>Hosted instance, your domain and certificate, or deployed into infrastructure you control.</td></tr>
+          <tr><th>Apps</th><td>Progressive web app plus native builds for the App Store and Play Store, published under your developer account in your name.</td></tr>
+          <tr><th>Compliance</th><td>Built for UK and EU drivers' hours rules: EU 561/2006 limits, driver-card and vehicle-unit downloads, infringement reporting.</td></tr>
+          <tr><th>Support</th><td>You support your customers. We support you — one technical contact, not a ticket queue.</td></tr>
+          <tr><th>What we keep</th><td>The platform's intellectual property remains with Infomac Solutions. Your brand, your customers and your data remain yours.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="contact">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Next step</span>
+      <h2>Tell us what you would call it.</h2>
+      <p>
+        A short conversation establishes whether this fits your market. If it does, a branded
+        instance for you to try takes days rather than months.
+      </p>
+      <a class="cta" href="mailto:hello@infomacsolutions.co.uk">hello@infomacsolutions.co.uk</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="mark"><span class="dot"></span>Infomac Solutions</span>
+    <span class="legal">&copy; 2026 Infomac Solutions. Platform and white-label rights reserved.</span>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    const nameInput = document.getElementById('brandName');
+    const heroName = document.getElementById('heroName');
+    const mockName = document.getElementById('mockName');
+    const swatches = document.getElementById('swatches');
+    const root = document.documentElement;
+
+    // Contrast decides the icon glyph colour, so a black or pale brand still
+    // reads. Relative luminance, the same rule the apps themselves use.
+    const readableInk = (hex) => {
+      const n = parseInt(hex.slice(1), 16);
+      const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+        const s = c / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+      });
+      return (0.2126 * r + 0.7152 * g + 0.0722 * b) > 0.45 ? '#0b0e12' : '#ffffff';
+    };
+
+    const applyName = () => {
+      const value = nameInput.value.trim() || 'Your Fleet';
+      heroName.textContent = value;
+      mockName.textContent = value;
+    };
+
+    const applyColour = (hex) => {
+      root.style.setProperty('--brand', hex);
+      root.style.setProperty('--brand-ink', readableInk(hex));
+      [...swatches.children].forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.colour === hex)));
+    };
+
+    nameInput.addEventListener('input', applyName);
+    swatches.addEventListener('click', (e) => {
+      const button = e.target.closest('button[data-colour]');
+      if (button) applyColour(button.dataset.colour);
+    });
+
+    applyName();
+  })();
+</script>
+
+</body>
+</html>
