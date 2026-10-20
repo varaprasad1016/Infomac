@@ -1,0 +1,396 @@
+/* Chrome for the 3D hero. The rest of the page keeps its styles inside
+   index.html; these live with the scene they belong to. */
+
+.hero {
+  position: relative;
+  background: var(--ink);
+  color: var(--paper);
+  overflow: clip;
+  padding-block: 0;
+}
+
+/* ── The stage: the canvas, and everything pinned over it ──────────────────── */
+.hero-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero-stage #gl {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The canvas is the drag surface, so it says so. */
+  cursor: grab;
+  outline: none;
+  touch-action: pan-y;
+}
+.hero-stage[data-grabbing='true'] #gl { cursor: grabbing; }
+.hero-stage[data-hover]:not([data-hover='']) #gl { cursor: pointer; }
+.hero-stage #gl:focus-visible { outline: 2px solid var(--brand); outline-offset: -4px; }
+
+/* A scrim under the copy column only, so the type stays legible over whatever
+   part of the lorry happens to be behind it without flattening the whole frame. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(100deg, rgba(7, 9, 13, 0.94) 0%, rgba(7, 9, 13, 0.82) 32%, rgba(7, 9, 13, 0.12) 58%, rgba(7, 9, 13, 0) 72%),
+    linear-gradient(to top, rgba(7, 9, 13, 0.75), rgba(7, 9, 13, 0) 38%);
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 3;
+  padding-block: clamp(56px, 9vw, 110px);
+  min-height: min(88vh, 860px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 1140px;
+  /* The copy must not swallow drags meant for the scene behind it. */
+  pointer-events: none;
+}
+.hero-copy > * { max-width: 54ch; }
+.hero-copy a,
+.hero-copy button,
+.hero-copy input,
+.hero-copy .console { pointer-events: auto; }
+
+/* ── Hotspot markers ──────────────────────────────────────────────────────── */
+.hs {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  /* Positioned by transform from main.js; this keeps the dot on the anchor. */
+  margin: -17px 0 0 -17px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: 0;
+  color: var(--paper);
+  font: inherit;
+  cursor: pointer;
+  transition: opacity 0.35s ease;
+}
+.hs[data-offstage='true'] { opacity: 0; pointer-events: none; }
+
+.hs-dot {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+}
+.hs-dot::before {
+  content: '';
+  position: absolute;
+  inset: 11px;
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px rgba(7, 9, 13, 0.5), 0 2px 10px rgba(0, 0, 0, 0.6);
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+.hs-dot::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  border: 1px solid rgba(244, 242, 237, 0.55);
+  transform: scale(0.78);
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.3s ease, opacity 0.3s;
+}
+.hs-label {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 5px 9px;
+  border-radius: 5px;
+  background: rgba(7, 9, 13, 0.72);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 0 0 1px rgba(244, 242, 237, 0.14);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.hs:hover .hs-label,
+.hs:focus-visible .hs-label,
+.hs[data-hover='true'] .hs-label,
+.hs[data-active='true'] .hs-label { opacity: 1; transform: translateX(0); }
+
+.hs:hover .hs-dot::after,
+.hs[data-hover='true'] .hs-dot::after { transform: scale(1.12); }
+
+.hs[data-active='true'] .hs-dot::before { background: var(--brand); transform: scale(1.15); }
+.hs[data-active='true'] .hs-dot::after { transform: scale(1.3); border-color: var(--brand); }
+.hs:focus-visible { outline: 2px solid var(--brand); outline-offset: 4px; border-radius: 6px; }
+
+/* The unselected markers pulse, so they are discoverable without a tooltip.
+   One at a time would be fussier; all three together reads as instrumentation. */
+@media (prefers-reduced-motion: no-preference) {
+  .hs:not([data-active='true']) .hs-dot::after { animation: hs-ping 2.8s ease-out infinite; }
+  @keyframes hs-ping {
+    0% { transform: scale(0.78); opacity: 0.9; }
+    70% { transform: scale(1.45); opacity: 0; }
+    100% { transform: scale(1.45); opacity: 0; }
+  }
+}
+
+/* ── The readout card ─────────────────────────────────────────────────────── */
+/* Docked rather than pinned to its marker: at hero framing the markers move, and
+   a panel that chases them is unreadable. */
+.hs-cards {
+  position: absolute;
+  z-index: 5;
+  right: clamp(16px, 3vw, 34px);
+  top: clamp(16px, 4vw, 48px);
+  width: min(330px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.hs-card {
+  pointer-events: auto;
+  padding: 16px 16px 15px;
+  border-radius: 12px;
+  border: 1px solid #2b3540;
+  background: rgba(12, 16, 22, 0.86);
+  backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+}
+.hs-card[hidden] { display: none; }
+.hs-card header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.hs-card .hs-kicker {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--brand);
+  display: block;
+  margin-bottom: 3px;
+}
+.hs-card h3 { font-size: 1rem; color: var(--paper); }
+.hs-card p { font-size: 0.86rem; color: #9aa7b4; margin-top: 8px; }
+.hs-close {
+  margin-left: auto;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: #1a2430;
+  border: 1px solid #2b3540;
+  color: #b9c2cd;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  line-height: 1;
+}
+.hs-close:hover { background: #22303f; color: var(--paper); }
+
+/* Rows of key/value telemetry inside a card. */
+.hs-rows { display: flex; flex-direction: column; gap: 6px; }
+.hs-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: #121a23;
+  border-left: 3px solid var(--brand);
+  font-size: 0.78rem;
+}
+.hs-row.off { border-left-color: #3b4756; }
+.hs-row .k { color: #8b97a4; }
+.hs-row .v {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--paper);
+  white-space: nowrap;
+}
+.hs-row .v.ok { color: var(--ok); }
+.hs-row .v.warn { color: var(--warn); }
+.hs-row .v.muted { color: #5d6b7a; }
+
+.hs-chips { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+.hs-chips span {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  padding: 4px 7px;
+  border-radius: 5px;
+  background: #121a23;
+  color: #8b97a4;
+  box-shadow: inset 0 0 0 1px #22303f;
+}
+.hs-chips span.on { background: var(--brand); color: var(--brand-ink); box-shadow: none; }
+
+/* ── Hint and the drive toggle ────────────────────────────────────────────── */
+.hero-hint {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: #6f7d8c;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  text-align: center;
+}
+.hero-hint[data-used='true'] { opacity: 0; }
+
+.drive {
+  position: absolute;
+  z-index: 5;
+  right: clamp(16px, 3vw, 34px);
+  bottom: clamp(16px, 3vw, 28px);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 15px 9px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: rgba(12, 16, 22, 0.8);
+  border: 1px solid #2b3540;
+  backdrop-filter: blur(12px);
+  transition: background 0.25s ease, border-color 0.25s ease;
+}
+.drive:hover { background: rgba(22, 30, 40, 0.9); border-color: #3b4756; }
+.drive:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.drive .drive-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3b4756;
+  transition: background 0.25s ease;
+}
+.drive[aria-pressed='true'] { border-color: var(--brand); }
+.drive[aria-pressed='true'] .drive-dot {
+  background: var(--ok);
+  animation: drive-pulse 1.6s ease-in-out infinite;
+}
+@keyframes drive-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* Lenis drives the scroll, and fights the page's CSS smooth scrolling if both
+   are live. The CSS rule stays for the no-JS case; Lenis adds this class. */
+html.lenis { scroll-behavior: auto !important; }
+html.lenis body { overscroll-behavior-y: none; }
+
+/* ── Fallback, when there is no WebGL2 ────────────────────────────────────── */
+.hero-fallback { display: none; }
+.hero-stage[data-fallback='true'] {
+  position: relative;
+  inset: auto;
+  min-height: 0;
+}
+.hero-stage[data-fallback='true'] .hero-fallback {
+  display: grid;
+  place-items: center;
+  padding: clamp(28px, 6vw, 60px) 20px;
+}
+/* Without the scene there is nothing to scrim. */
+.hero:has(.hero-stage[data-fallback='true'])::before { background: none; }
+.hero:has(.hero-stage[data-fallback='true']) .hero-copy { min-height: 0; }
+
+.fallback-plate {
+  width: min(420px, 100%);
+  border-radius: 14px;
+  border: 1px solid #2b3540;
+  background: #121820;
+  padding: 26px;
+  text-align: center;
+}
+.fallback-plate .fb-mark {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 14px;
+  background: var(--brand);
+  display: grid;
+  place-items: center;
+  transition: background 0.25s ease;
+}
+.fallback-plate .fb-mark svg { width: 28px; height: 28px; fill: var(--brand-ink); }
+.fallback-plate strong {
+  display: block;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+.fallback-plate .fb-sub {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7d8b9a;
+  margin-top: 6px;
+}
+.fallback-plate .fb-note { font-size: 0.84rem; color: #9aa7b4; margin-top: 16px; }
+
+/* ── Small screens ────────────────────────────────────────────────────────── */
+/* The scene stops being a backdrop and becomes a block of its own: overlaying
+   28 characters of hero copy on a lorry at 390px wide reads as neither. */
+@media (max-width: 860px) {
+  .hero-stage {
+    position: relative;
+    inset: auto;
+    height: 62vh;
+    min-height: 340px;
+  }
+  .hero::before {
+    background: linear-gradient(to top, var(--ink) 2%, rgba(7, 9, 13, 0) 34%);
+    bottom: auto;
+    height: 62vh;
+    min-height: 340px;
+  }
+  .hero-copy {
+    min-height: 0;
+    padding-block: 28px clamp(40px, 9vw, 64px);
+  }
+  .hero-copy > * { max-width: none; }
+  .hs-cards {
+    right: 10px;
+    left: 10px;
+    top: auto;
+    bottom: 10px;
+    width: auto;
+    max-height: calc(100% - 20px);
+    overflow-y: auto;
+  }
+  /* Compact, so the card leaves the hardware it is describing on screen. */
+  .hs-card { padding: 12px; }
+  .hs-card header { margin-bottom: 9px; }
+  .hs-card p { font-size: 0.8rem; margin-top: 7px; }
+  .hs-row { padding: 5px 8px; font-size: 0.74rem; }
+  .hs-rows { gap: 4px; }
+  .drive { bottom: auto; top: 12px; right: 12px; }
+  .hero-hint { display: none; }
+  .hs-label { display: none; }
+}

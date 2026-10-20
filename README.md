@@ -1,52 +1,89 @@
 # Infomac Solutions — site
 
-One static page. No build step, no framework, no dependencies: `index.html` carries its own
-styles and the single piece of script that drives the live rebrand demo.
+One page. The hero is an interactive 3D depot: a lorry you can turn round, with the
+licensee's name and colour printed live onto the trailer curtain, and three markers on the
+hardware the platform actually talks to — the tracker, the dashcam and the tachograph.
+
+Built on the engine from [Dioramas](https://github.com/blendi-remade/dioramas) (MIT),
+vendored into `src/core/` — see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+## Running it
+
+```bash
+npm install
+npm run dev        # http://127.0.0.1:5180
+npm run build      # -> dist/
+npm run preview    # serve the build
+```
+
+This used to be a single `index.html` with no build step. It has one now, because
+three.js, postprocessing and n8ao ship as bare ES modules that a browser cannot resolve on
+its own. The page's own styles and markup are still plain HTML in `index.html`.
 
 ## Deploying on Netlify
 
-Add a new site from this repository. Netlify reads `netlify.toml`, so there is nothing to
-configure:
-
-- **Build command** — none
-- **Publish directory** — the repository root
-
-Pushing to `main` redeploys. For a one-off, dragging this folder onto the Netlify dashboard
-works equally well.
+`netlify.toml` carries the settings, so there is nothing to configure in the dashboard:
+build with `npm run build`, publish `dist`. Pushing to `main` redeploys. Dragging the
+folder onto the dashboard no longer works — it needs the build.
 
 ## What is where
 
 | Path | What it is |
 |---|---|
-| `index.html` | The entire site — markup, styles and the rebrand script |
-| `assets/platform-demo.mp4` | Screen recording of the platform, unbranded (13 MB) |
-| `assets/app-icon-512.png` | White-label app icon, for store listings or a favicon |
-| `netlify.toml` | Publish settings and cache headers |
+| `index.html` | The page — markup and all of the non-hero styling |
+| `src/site/main.js` | The scene: lighting, camera rig, hotspots, drive toggle, brand console |
+| `src/site/lorry.js` | The tractor unit and trailer, built from geometry |
+| `src/site/hero.css` | Styling for the canvas, markers and readout cards |
+| `src/core/` | The Dioramas engine, vendored. Fix bugs upstream, not here |
+| `public/assets/platform-demo.mp4` | Screen recording of the platform, unbranded (13 MB) |
+| `public/assets/app-icon-512.png` | White-label app icon, for store listings or a favicon |
+| `netlify.toml` | Build, publish and cache headers |
 
-## Editing it
+Anything in `public/` is copied to the site root untouched, so the video stays at
+`/assets/platform-demo.mp4`.
 
-**Wording** lives in the markup, in plain English — the capability cards, the licensing
-steps and the specification table are ordinary HTML.
+## The hero
 
-**Colours** are CSS custom properties at the top of the file:
+**The demo is the selling point.** A visitor types their brand name and picks a colour, and
+both are printed onto the trailer curtain as they type — the curtain is a canvas texture
+redrawn on every keystroke. The strapline inside the colour band flips between black and
+white on the contrast of the chosen colour, so a black or pale brand still reads.
+
+**Four things respond to a visitor:**
+
+- **Drag, or the arrow keys**, to orbit. Left alone it breathes around one composed angle
+  rather than rotating away from it, so the hero always looks like the hero.
+- **The three markers** — tracker, dashcam, tachograph — fly the camera to that piece of
+  hardware and open its live readout. They are real buttons, so they work by keyboard; the
+  3D hardware under them is clickable too, via a raycast.
+- **Your name**, the fourth marker, turns the lorry side-on to the curtain.
+- **Drive** turns the wheels, runs the road under them, lights the headlamps and starts
+  the telemetry counting.
+
+**Colours** are CSS custom properties at the top of `index.html`:
 
 - `--accent` is Infomac's own mark (workshop teal). The site chrome uses this.
-- `--brand` is the *licensee's* colour, the one the hero demo changes. It starts as indigo
-  and is overwritten live by the swatches.
+- `--brand` is the *licensee's* colour, the one the hero changes. It starts as indigo and
+  is overwritten live by the swatches, in the CSS and in the 3D livery together.
 - `--ink` / `--paper` are the near-black and warm off-white the page is built on.
 
-**The demo** is the hero's selling point: a visitor types their own brand name and picks a
-colour, and the mock app rebrands as they watch. The icon glyph flips between black and
-white according to the contrast of the chosen colour, so a black or pale brand still reads.
+**If WebGL2 is missing** the canvas is removed and a flat app-icon plate takes its place,
+still driven by the name and colour. `prefers-reduced-motion` turns off the intro, the idle
+drift and the smooth scrolling, and leaves the scene still but interactive.
+
+**Performance.** `window.__fps` is set by the engine, and `window.__hero` exposes the
+camera rig and the scene for checking framing from the console. Reflections and volumetric
+beams are turned off below 860px, and the pixel ratio is capped.
 
 ## Things to fix before this goes in front of anyone
 
 - **`hello@infomacsolutions.co.uk` is a placeholder.** Replace it with a real address, and
   with a phone number if you want one.
 - **No favicon or Open Graph image yet.** A link shared on WhatsApp or LinkedIn will show
-  nothing. `assets/app-icon-512.png` is a reasonable favicon; a 1200x630 share image needs
-  making.
-- **The registrations in the hero mock are real vehicles** (PJ19FBK and the rest). They read
-  as credible, but they belong to a customer — consider inventing plates instead.
+  nothing. `public/assets/app-icon-512.png` is a reasonable favicon; a 1200x630 share image
+  needs making.
+- **The recording shows real vehicle registrations.** The plates in the hero are invented
+  now, but `platform-demo.mp4` is a capture of a live fleet and the registrations in it are
+  real. Consider reshooting it against demo data.
 - **No analytics, no cookie banner.** Deliberate: the site sets no cookies and tracks
   nobody, so it needs no banner. Adding analytics changes that.
