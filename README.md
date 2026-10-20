@@ -35,7 +35,8 @@ folder onto the dashboard no longer works — it needs the build.
 | `src/site/lorry.js` | The tractor unit and trailer, built from geometry |
 | `src/site/hero.css` | Styling for the canvas, markers and readout cards |
 | `src/core/` | The Dioramas engine, vendored. Fix bugs upstream, not here |
-| `public/assets/platform-demo.mp4` | Screen recording of the platform, unbranded (13 MB) |
+| `scripts/demo/` | Generates the walkthrough video. Its deps are its own, not the site's |
+| `public/assets/platform-demo.mp4` | The platform walkthrough — generated, not recorded (see `scripts/demo/`) |
 | `public/assets/app-icon-512.png` | White-label app icon, for store listings or a favicon |
 | `netlify.toml` | Build, publish and cache headers |
 
@@ -82,8 +83,9 @@ beams are turned off below 860px, and the pixel ratio is capped.
 - **No favicon or Open Graph image yet.** A link shared on WhatsApp or LinkedIn will show
   nothing. `public/assets/app-icon-512.png` is a reasonable favicon; a 1200x630 share image
   needs making.
-- **The recording shows real vehicle registrations.** The plates in the hero are invented
-  now, but `platform-demo.mp4` is a capture of a live fleet and the registrations in it are
-  real. Consider reshooting it against demo data.
+- **The old recording is still in git history.** The genuine capture of a live fleet was
+  replaced (see `scripts/demo/`), but the original is still reachable in earlier commits on
+  GitHub, real registrations and all. Purging it needs a history rewrite and a force push,
+  which nobody has done yet.
 - **No analytics, no cookie banner.** Deliberate: the site sets no cookies and tracks
   nobody, so it needs no banner. Adding analytics changes that.

@@ -1,0 +1,13 @@
+{
+  "name": "infomac-demo-recorder",
+  "private": true,
+  "type": "module",
+  "description": "Renders the fictitious platform demo video. Kept out of the site's own package.json so a Netlify build never installs Playwright or ffmpeg.",
+  "scripts": {
+    "record": "node record.mjs"
+  },
+  "devDependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "playwright-core": "^1.56.0"
+  }
+}

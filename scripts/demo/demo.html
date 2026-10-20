@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Platform demo — source frames</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+<style>
+  /* Rendered at 360x840 CSS with a device scale of 3, giving a 1080x2520 frame —
+     the same shape as the recording this replaces. Every registration, driver,
+     place and figure below is invented. */
+  :root {
+    --bg: #0a0e15;
+    --card: #141b26;
+    --card-2: #182130;
+    --line: #202b3a;
+    --ink: #e8edf4;
+    --dim: #8b97a8;
+    --dimmer: #5d6b7e;
+    --accent: #6c5ce7;
+    --accent-2: #8b7cf0;
+    --ok: #27c08a;
+    --warn: #e8a33d;
+    --bad: #e35d6a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  html, body { width: 360px; height: 840px; overflow: hidden; background: #000; }
+  body { font-family: Roboto, 'Segoe UI', system-ui, sans-serif; color: var(--ink); }
+
+  .phone { position: relative; width: 360px; height: 840px; background: var(--bg); overflow: hidden; }
+
+  /* ── Android chrome ─────────────────────────────────────────────────────── */
+  .statusbar {
+    position: absolute; inset: 0 0 auto 0; height: 28px; z-index: 40;
+    display: flex; align-items: center; padding: 0 12px; gap: 6px;
+    font-size: 11px; font-weight: 500; color: #fff; background: #000;
+  }
+  .rec-pill {
+    display: inline-flex; align-items: center; gap: 3px; background: #d93025;
+    border-radius: 999px; padding: 1px 5px; font-size: 8px; font-weight: 700;
+  }
+  .rec-pill i { width: 5px; height: 5px; border-radius: 50%; background: #fff; display: block; }
+  .statusbar .sp { margin-left: auto; display: flex; align-items: center; gap: 4px; opacity: .9; }
+  .bars { display: flex; align-items: flex-end; gap: 1px; height: 9px; }
+  .bars i { width: 2px; background: #fff; display: block; border-radius: .5px; }
+  .batt { width: 18px; height: 9px; border: 1px solid #fff; border-radius: 2px; position: relative; }
+  .batt::after { content: ''; position: absolute; left: 1px; top: 1px; bottom: 1px; width: 60%; background: #fff; border-radius: 1px; }
+  .gesture { position: absolute; left: 50%; bottom: 5px; width: 108px; height: 3px; border-radius: 2px; background: #5b6473; transform: translateX(-50%); z-index: 40; }
+
+  .scene { position: absolute; inset: 28px 0 0 0; opacity: 0; }
+  .scene.on { opacity: 1; }
+
+  /* ── Shared app chrome ──────────────────────────────────────────────────── */
+  .appbar { display: flex; align-items: center; gap: 8px; padding: 9px 11px; }
+  .logo { width: 25px; height: 25px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; flex: none; }
+  .logo svg { width: 14px; height: 14px; fill: #fff; }
+  .burger { width: 18px; display: grid; gap: 3px; flex: none; }
+  .burger i { height: 1.5px; background: var(--dim); border-radius: 1px; }
+  .search {
+    flex: 1; height: 31px; border-radius: 9px; background: var(--card);
+    display: flex; align-items: center; gap: 7px; padding: 0 9px;
+    font-size: 11.5px; color: var(--dimmer); position: relative;
+  }
+  .ico { width: 15px; height: 15px; fill: none; stroke: var(--dim); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  .ico.s { width: 13px; height: 13px; }
+  .badge { position: absolute; top: 5px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); }
+
+  .tabs { display: flex; gap: 7px; padding: 2px 11px 8px; }
+  .tab {
+    flex: 1; height: 29px; border-radius: 8px; background: var(--card);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 11.5px; font-weight: 500; color: var(--dim);
+  }
+  .tab.on { background: var(--accent); color: #fff; }
+  .tab.on .ico { stroke: #fff; }
+
+  /* ── Dashboard ──────────────────────────────────────────────────────────── */
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 11px; }
+  .tile {
+    background: var(--card); border: 1px solid var(--line); border-radius: 11px;
+    padding: 10px; display: flex; align-items: center; gap: 9px;
+  }
+  .tile .dot { width: 23px; height: 23px; border-radius: 7px; display: grid; place-items: center; flex: none; }
+  .tile .dot svg { width: 13px; height: 13px; }
+  .tile .n { font-size: 17px; font-weight: 700; line-height: 1.1; display: block; }
+  .tile .l { font-size: 8.5px; letter-spacing: .09em; color: var(--dimmer); font-weight: 500; display: block; }
+  .t-all .dot { background: rgba(108,92,231,.17); } .t-all .dot svg { fill: var(--accent-2); }
+  .t-run .dot { background: rgba(39,192,138,.15); } .t-run .dot svg { fill: var(--ok); }
+  .t-idl .dot { background: rgba(232,163,61,.15); } .t-idl .dot svg { fill: var(--warn); }
+  .t-off .dot { background: rgba(227,93,106,.13); } .t-off .dot svg { fill: var(--bad); }
+  .t-run { border-color: rgba(39,192,138,.3); }
+
+  .chips { display: flex; gap: 6px; padding: 12px 11px 7px; }
+  .chip {
+    padding: 4px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 500;
+    border: 1px solid var(--line); color: var(--dim); background: transparent;
+  }
+  .chip.on { background: rgba(39,192,138,.16); border-color: rgba(39,192,138,.45); color: var(--ok); }
+  .chip.c-idl.on { background: rgba(232,163,61,.16); border-color: rgba(232,163,61,.45); color: var(--warn); }
+  .chip.c-off.on { background: rgba(227,93,106,.14); border-color: rgba(227,93,106,.42); color: var(--bad); }
+
+  .listhead { padding: 4px 11px 7px; font-size: 9px; letter-spacing: .1em; color: var(--dimmer); font-weight: 500; }
+  .vlist { padding: 0 11px; display: flex; flex-direction: column; gap: 7px; }
+  .v {
+    background: var(--card); border-radius: 11px; padding: 9px 10px 9px 12px;
+    display: flex; align-items: center; gap: 9px; position: relative; overflow: hidden;
+    opacity: 0; transform: translateY(7px);
+  }
+  .v::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--ok); }
+  .v.idl::before { background: var(--warn); } .v.off::before { background: #3b4756; }
+  .v .vi { width: 27px; height: 27px; border-radius: 8px; background: rgba(39,192,138,.14); display: grid; place-items: center; flex: none; }
+  .v.idl .vi { background: rgba(232,163,61,.14); } .v.off .vi { background: rgba(255,255,255,.05); }
+  .v .vi svg { width: 15px; height: 15px; fill: var(--ok); }
+  .v.idl .vi svg { fill: var(--warn); } .v.off .vi svg { fill: #5d6b7e; }
+  .v .reg, .v .st, .v .loc { display: block; }
+  .v .reg { font-size: 12.5px; font-weight: 700; letter-spacing: .01em; }
+  .v .st { font-size: 9.5px; margin-top: 1px; }
+  .v .st b { color: var(--ok); font-weight: 500; } .v.idl .st b { color: var(--warn); } .v.off .st b { color: var(--dimmer); }
+  .v .st span { color: var(--dimmer); }
+  .v .loc { font-size: 9px; color: var(--dimmer); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+  .v .live { margin-left: auto; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); flex: none; }
+  .v.off .live { background: #3b4756; }
+
+  /* ── Map ────────────────────────────────────────────────────────────────── */
+  .mapwrap { position: absolute; inset: 76px 0 0 0; overflow: hidden; background: #0d1a14; }
+  .mapwrap.full { inset: 76px 0 0 0; }
+  .mapsvg { position: absolute; left: 50%; top: 50%; width: 760px; height: 760px; margin: -380px 0 0 -380px; }
+  .mapctl { position: absolute; right: 9px; top: 9px; display: flex; flex-direction: column; gap: 6px; }
+  .mapctl div {
+    width: 27px; height: 27px; border-radius: 7px; background: rgba(16,22,32,.88);
+    border: 1px solid var(--line); display: grid; place-items: center; font-size: 14px; color: var(--dim);
+  }
+  .marker {
+    position: absolute; width: 30px; height: 30px; border-radius: 50%;
+    background: #fff; display: grid; place-items: center; box-shadow: 0 3px 10px rgba(0,0,0,.6);
+    transform: translate(-50%, -50%);
+  }
+  .marker svg { width: 17px; height: 17px; fill: var(--ok); }
+  .marker .ring { position: absolute; inset: -6px; border-radius: 50%; border: 2px solid rgba(39,192,138,.55); }
+  .mlabel {
+    position: absolute; transform: translate(-50%, -100%); white-space: nowrap; text-align: center;
+    font-size: 9.5px; font-weight: 700; line-height: 1.3; z-index: 4;
+    background: rgba(12,17,25,.9); color: #fff; padding: 3px 7px; border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.45);
+  }
+  .mlabel span { display: block; font-weight: 500; color: #4fd8a0; font-size: 9px; }
+  .scalebar { position: absolute; left: 9px; bottom: 9px; font-size: 8.5px; color: #2a3b2f; background: rgba(255,255,255,.75); padding: 1px 6px; border-radius: 3px; }
+  .mapnote { position: absolute; right: 9px; bottom: 9px; font-size: 8px; color: rgba(255,255,255,.45); }
+
+  .popup {
+    position: absolute; left: 11px; right: 11px; bottom: 16px; z-index: 5;
+    background: rgba(18,24,34,.97); border: 1px solid var(--line); border-radius: 13px;
+    padding: 11px 12px; opacity: 0; transform: translateY(10px);
+    box-shadow: 0 14px 40px rgba(0,0,0,.6);
+  }
+  .popup h4 { font-size: 12.5px; font-weight: 700; display: flex; align-items: center; }
+  .popup h4 .x { margin-left: auto; color: var(--dimmer); font-weight: 400; font-size: 14px; }
+  .popup dl { margin-top: 9px; display: grid; grid-template-columns: 72px 1fr; gap: 6px 8px; font-size: 10px; }
+  .popup dt { color: var(--dimmer); }
+  .popup dd { color: var(--ink); }
+  .popup .links { margin-top: 10px; font-size: 10px; color: var(--accent-2); }
+  .popup .acts { margin-top: 10px; display: flex; gap: 7px; }
+  .popup .acts div { width: 25px; height: 25px; border-radius: 50%; background: var(--card-2); display: grid; place-items: center; }
+  .popup .acts div:first-child { background: rgba(39,192,138,.2); }
+  .popup .acts svg { width: 12px; height: 12px; }
+
+  /* ── Camera ─────────────────────────────────────────────────────────────── */
+  .camhead { display: flex; align-items: center; gap: 14px; padding: 11px 13px 9px; font-size: 11.5px; }
+  .camhead .back { font-size: 17px; color: var(--dim); line-height: 1; }
+  .camhead .ct { color: var(--dim); display: flex; align-items: center; gap: 5px; padding-bottom: 5px; }
+  .camhead .ct.on { color: var(--accent-2); border-bottom: 2px solid var(--accent-2); }
+  .camhead .ct.on .ico { stroke: var(--accent-2); }
+
+  .camctl { display: flex; align-items: flex-end; gap: 8px; padding: 2px 13px 9px; }
+  .sel { }
+  .sel .lab { font-size: 8.5px; color: var(--dimmer); }
+  .sel .box {
+    margin-top: 2px; height: 27px; min-width: 92px; border-radius: 7px; border: 1px solid var(--line);
+    background: var(--card); display: flex; align-items: center; justify-content: space-between;
+    padding: 0 9px; font-size: 11px;
+  }
+  .btn-stop { height: 27px; border-radius: 7px; background: #e35d6a; color: #fff; font-size: 11px; font-weight: 500;
+    display: flex; align-items: center; gap: 6px; padding: 0 13px; }
+  .btn-stop i { width: 8px; height: 8px; background: #fff; border-radius: 1.5px; display: block; }
+  .btn-sd { height: 27px; border-radius: 7px; border: 1px solid var(--line); background: var(--card);
+    display: grid; place-items: center; padding: 0 13px; font-size: 11px; color: var(--dim); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; padding: 0 13px; }
+  .cell { position: relative; aspect-ratio: 3/4; border-radius: 8px; overflow: hidden; background: #05080b; border: 1.5px solid transparent; }
+  .cell.on { border-color: var(--ok); }
+  .cell .tag {
+    position: absolute; left: 5px; top: 5px; z-index: 3; font-size: 7.5px; font-weight: 500;
+    background: rgba(5,8,11,.72); padding: 2px 5px; border-radius: 3px; color: #dfe6ea;
+  }
+  .cell .ts { position: absolute; left: 5px; bottom: 5px; z-index: 3; font-size: 6.5px; color: #dfe6ea; text-shadow: 0 1px 3px #000; font-variant-numeric: tabular-nums; }
+  .cell .tools { position: absolute; right: 4px; bottom: 4px; z-index: 3; display: flex; gap: 5px; }
+  .cell .tools svg { width: 11px; height: 11px; stroke: #cfd8e0; fill: none; stroke-width: 1.8; }
+  .cell .rec { position: absolute; right: 5px; top: 5px; z-index: 3; width: 6px; height: 6px; border-radius: 50%; background: #ff3b30; }
+  .cell canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  .mapstrip { position: absolute; left: 13px; right: 13px; bottom: 18px; height: 158px; border-radius: 10px; overflow: hidden; background: #0d1a14; }
+  .mapstrip .mapsvg { width: 420px; height: 420px; margin: -210px 0 0 -210px; }
+
+  .recbar { position: absolute; left: 13px; right: 13px; bottom: 186px; }
+  .recbar .r1, .recbar .r3 { display: block; font-size: 8.5px; letter-spacing: .07em; color: var(--dimmer); }
+  .recbar .r3 { margin-top: 4px; letter-spacing: 0; }
+  .recbar .r2 { display: block; margin-top: 5px; height: 4px; border-radius: 3px; background: #0d131c; box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+  .recbar .r2 i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+
+  /* ── Download ───────────────────────────────────────────────────────────── */
+  .clips { padding: 4px 13px; display: flex; flex-direction: column; gap: 8px; }
+  .clip { background: var(--card); border-radius: 10px; padding: 10px 11px; }
+  .clip .r1 { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 500; }
+  .clip .ch { font-size: 8.5px; background: rgba(108,92,231,.2); color: var(--accent-2); padding: 2px 6px; border-radius: 4px; font-weight: 500; }
+  .clip .sz { margin-left: auto; font-size: 9.5px; color: var(--dimmer); font-variant-numeric: tabular-nums; }
+  .clip .r2 { margin-top: 4px; font-size: 9px; color: var(--dimmer); display: flex; align-items: center; gap: 6px; }
+  .clip .bar { margin-top: 8px; height: 4px; border-radius: 3px; background: #0d131c; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+  .clip .bar i { display: block; height: 100%; background: var(--accent); border-radius: 2px; }
+  .clip .done { color: var(--ok); }
+
+  .reqpanel { margin: 14px 13px 0; background: var(--card); border: 1px solid var(--line); border-radius: 11px; padding: 12px; }
+  .reqpanel .t { display: block; font-size: 11px; font-weight: 500; }
+  .reqpanel .row { display: flex; gap: 8px; margin-top: 9px; }
+  .reqpanel .f { flex: 1; background: #0d131c; border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px; font-size: 10.5px; }
+  .reqpanel .f i { display: block; font-style: normal; font-size: 8px; color: var(--dimmer); letter-spacing: .06em; margin-bottom: 2px; }
+  .reqpanel .go { display: block; margin-top: 11px; height: 30px; line-height: 30px; text-align: center; border-radius: 8px; background: var(--accent); font-size: 11px; font-weight: 500; }
+
+  /* ── Operations list ────────────────────────────────────────────────────── */
+  .ops { position: absolute; inset: 0; padding: 0 13px; }
+  .ops .inner { display: flex; flex-direction: column; gap: 9px; }
+  .mod { background: var(--card); border: 1px solid var(--line); border-radius: 11px; padding: 11px 12px; }
+  .mod.hl { background: var(--card-2); border-color: rgba(108,92,231,.4); }
+  .mod h5 { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .mod h5 b { font-size: 9px; font-weight: 500; color: var(--accent-2); }
+  .mod h5 b.w { color: var(--warn); } .mod h5 b.g { color: var(--ok); }
+  .mod p { margin-top: 4px; font-size: 9.5px; line-height: 1.45; color: var(--dim); }
+  .mod .led { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+
+  /* ── Driver app ─────────────────────────────────────────────────────────── */
+  .dbar { display: flex; align-items: center; gap: 10px; padding: 11px 13px; }
+  .dbar .av { width: 25px; height: 25px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .dbar .ti { font-size: 13px; font-weight: 700; margin: 0 auto; }
+  .checks { padding: 6px 13px; display: flex; flex-direction: column; gap: 7px; }
+  .ck { background: var(--card); border-radius: 10px; padding: 10px 11px; display: flex; align-items: center; gap: 9px; }
+  .ck .bx { width: 19px; height: 19px; border-radius: 6px; border: 1.5px solid var(--line); display: grid; place-items: center; flex: none; }
+  .ck.done .bx { background: var(--ok); border-color: var(--ok); }
+  .ck .bx svg { width: 11px; height: 11px; stroke: #fff; stroke-width: 2.6; fill: none; opacity: 0; }
+  .ck.done .bx svg { opacity: 1; }
+  .ck .nm, .ck .sub { display: block; }
+  .ck .nm { font-size: 11.5px; }
+  .ck .sub { font-size: 9px; color: var(--dimmer); margin-top: 1px; }
+  .ck .cam { margin-left: auto; }
+  .ck.cur { border: 1px solid rgba(108,92,231,.5); }
+  .sumbar { position: absolute; left: 13px; right: 13px; bottom: 150px; }
+  .sumbar .s1 { display: flex; font-size: 10.5px; color: var(--dim); }
+  .sumbar .s1 b { margin-left: auto; font-weight: 500; color: var(--ok); }
+  .sumbar .s2 { display: block; margin-top: 6px; height: 5px; border-radius: 3px; background: #0d131c; box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+  .sumbar .s2 i { display: block; height: 100%; background: var(--ok); border-radius: 3px; }
+  .sumbar .go { display: block; margin-top: 12px; height: 36px; line-height: 36px; text-align: center; border-radius: 9px; background: var(--accent); font-size: 12px; font-weight: 500; }
+
+  .toast {
+    position: absolute; left: 50%; bottom: 84px; transform: translateX(-50%);
+    background: #2a3446; color: #e8edf4; border-radius: 9px; padding: 9px 14px;
+    font-size: 11px; text-align: center; max-width: 230px; opacity: 0;
+    box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  }
+  .bottomnav {
+    position: absolute; left: 11px; right: 11px; bottom: 16px; height: 50px;
+    background: var(--card); border-radius: 13px; display: flex; align-items: center;
+  }
+  .bottomnav div { flex: 1; text-align: center; font-size: 8px; color: var(--dimmer); }
+  .bottomnav div svg { width: 16px; height: 16px; display: block; margin: 0 auto 3px; stroke: var(--dimmer); fill: none; stroke-width: 1.8; }
+  .bottomnav div.on { color: var(--accent-2); }
+  .bottomnav div.on svg { stroke: var(--accent-2); }
+
+  /* The touch blob, so the tour reads as somebody using it. */
+  .touch {
+    position: absolute; width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,.3); border: 1px solid rgba(255,255,255,.5);
+    transform: translate(-50%,-50%) scale(.4); opacity: 0; z-index: 60; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="statusbar">
+    <span id="clock">08:12</span>
+    <span class="rec-pill"><i></i>REC</span>
+    <span class="sp">
+      <span class="bars"><i style="height:3px"></i><i style="height:5px"></i><i style="height:7px"></i><i style="height:9px"></i></span>
+      <span class="batt"></span>
+    </span>
+  </div>
+
+  <!-- ══ 1. Dashboard ══════════════════════════════════════════════════════ -->
+  <section class="scene" id="sc-dash">
+    <div class="appbar">
+      <span class="logo"><svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></span>
+      <span class="burger"><i></i><i></i><i></i></span>
+      <span class="search">
+        <svg class="ico s" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        Search vehicle
+        <span class="badge"></span>
+      </span>
+      <svg class="ico" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="ico" viewBox="0 0 24 24"><path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </div>
+    <div class="tabs">
+      <span class="tab on"><svg class="ico s" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>Dashboard</span>
+      <span class="tab"><svg class="ico s" viewBox="0 0 24 24"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3z"/></svg>Map</span>
+    </div>
+    <div class="tiles">
+      <div class="tile t-all"><span class="dot"><svg viewBox="0 0 24 24"><path d="M3 5h13v10H3zM16 8h3l2 3v4h-5z"/><circle cx="7" cy="17" r="2"/><circle cx="18" cy="17" r="2"/></svg></span>
+        <span><span class="n" id="n-all">0</span><span class="l">ALL</span></span></div>
+      <div class="tile t-run"><span class="dot"><svg viewBox="0 0 24 24"><path d="M3 5h13v10H3zM16 8h3l2 3v4h-5z"/><circle cx="7" cy="17" r="2"/><circle cx="18" cy="17" r="2"/></svg></span>
+        <span><span class="n" id="n-run">0</span><span class="l">RUNNING</span></span></div>
+      <div class="tile t-idl"><span class="dot"><svg viewBox="0 0 24 24"><path d="M8 5h3v14H8zM13 5h3v14h-3z"/></svg></span>
+        <span><span class="n" id="n-idl">0</span><span class="l">IDLING</span></span></div>
+      <div class="tile t-off"><span class="dot"><svg viewBox="0 0 24 24"><path d="M5 17h11a4 4 0 0 0 .6-8A6 6 0 0 0 5 10a3.5 3.5 0 0 0 0 7z"/></svg></span>
+        <span><span class="n" id="n-off">0</span><span class="l">OFFLINE</span></span></div>
+    </div>
+    <div class="chips">
+      <span class="chip" id="ch-all">All (18)</span>
+      <span class="chip c-run" id="ch-run">Running</span>
+      <span class="chip c-idl" id="ch-idl">Idling</span>
+      <span class="chip c-off" id="ch-off">Offline</span>
+    </div>
+    <div class="listhead" id="listhead">VEHICLES (6 / 18)</div>
+    <div class="vlist" id="vlist"></div>
+  </section>
+
+  <!-- ══ 2. Map ════════════════════════════════════════════════════════════ -->
+  <section class="scene" id="sc-map">
+    <div class="appbar">
+      <span class="logo"><svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg></span>
+      <span class="burger"><i></i><i></i><i></i></span>
+      <span class="search"><svg class="ico s" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Search vehicle<span class="badge"></span></span>
+      <svg class="ico" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="ico" viewBox="0 0 24 24"><path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </div>
+    <div class="tabs">
+      <span class="tab"><svg class="ico s" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>Dashboard</span>
+      <span class="tab on"><svg class="ico s" viewBox="0 0 24 24"><path d="M9 3L3 6v15l6-3 6 3 6-3V3l-6 3z"/></svg>Map</span>
+    </div>
+    <div class="mapwrap">
+      <div class="mapsvg" id="map-a"></div>
+      <div class="mapctl"><div>&#9783;</div><div>+</div><div>&minus;</div></div>
+      <div class="mlabel" id="mlab">YN21 KVD<span>56 mph</span></div>
+      <div class="marker" id="mmark"><span class="ring"></span>
+        <svg viewBox="0 0 24 24"><path d="M3 5h13v10H3zM16 8h3l2 3v4h-5z"/><circle cx="7" cy="17" r="2"/><circle cx="18" cy="17" r="2"/></svg></div>
+      <div class="scalebar">2 mi</div>
+      <div class="mapnote">Demo map</div>
+      <div class="popup" id="popup">
+        <h4>YN21 KVD<span class="x">&times;</span></h4>
+        <dl>
+          <dt>Fix time</dt><dd id="fixtime">20/10/2026, 08:12:44</dd>
+          <dt>Location</dt><dd>A14 westbound, J38</dd>
+          <dt>Speed</dt><dd id="popspeed">56.0 mph</dd>
+          <dt>Odometer</dt><dd>184,207 mi</dd>
+          <dt>Driver</dt><dd>R. Okafor</dd>
+        </dl>
+        <div class="links">More details &middot; Journeys &middot; Cameras</div>
+        <div class="acts">
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="#27c08a" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="#8b97a8" stroke-width="2"><path d="M23 7l-7 5 7 5zM1 5h15v14H1z"/></svg></div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="#8b97a8" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="#8b97a8" stroke-width="2"><path d="M4 17l6-6 4 4 6-8"/></svg></div>
+          <div><svg viewBox="0 0 24 24" fill="none" stroke="#8b97a8" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ 3. Cameras ════════════════════════════════════════════════════════ -->
+  <section class="scene" id="sc-cam">
+    <div class="camhead">
+      <span class="back">&#8592;</span>
+      <span class="ct"><svg class="ico s" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5zM1 5h15v14H1z"/></svg>Live</span>
+      <span class="ct on"><svg class="ico s" viewBox="0 0 24 24"><path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/></svg>Multi</span>
+      <span class="ct"><svg class="ico s" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"/></svg>Download</span>
+    </div>
+    <div class="camctl">
+      <span class="sel"><span class="lab">Index</span><span class="box">Channel 1 <span style="color:var(--dimmer)">&#9662;</span></span></span>
+      <span class="btn-stop"><i></i>Stop</span>
+      <span class="btn-sd">SD</span>
+    </div>
+    <div class="grid2" id="cells"></div>
+    <div class="recbar">
+      <span class="r1">RECORDER &middot; 4 CHANNELS &middot; SD 128 GB</span>
+      <span class="r2"><i style="width:62%"></i></span>
+      <span class="r3">62% used &middot; 9 days retained &middot; healthy</span>
+    </div>
+    <div class="mapstrip">
+      <div class="mapsvg" id="map-b"></div>
+      <div class="mlabel" id="mlab2" style="left:50%;top:40%">YN21 KVD<span>56 mph</span></div>
+      <div class="marker" id="mmark2" style="left:50%;top:56%;width:24px;height:24px">
+        <svg viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M3 5h13v10H3zM16 8h3l2 3v4h-5z"/><circle cx="7" cy="17" r="2"/><circle cx="18" cy="17" r="2"/></svg></div>
+      <div class="scalebar" style="font-size:7px">1 mi</div>
+    </div>
+  </section>
+
+  <!-- ══ 4. Download ═══════════════════════════════════════════════════════ -->
+  <section class="scene" id="sc-dl">
+    <div class="camhead">
+      <span class="back">&#8592;</span>
+      <span class="ct"><svg class="ico s" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5zM1 5h15v14H1z"/></svg>Live</span>
+      <span class="ct"><svg class="ico s" viewBox="0 0 24 24"><path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/></svg>Multi</span>
+      <span class="ct on"><svg class="ico s" viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"/></svg>Download</span>
+    </div>
+    <div class="listhead" style="padding-left:13px">CLIPS ON THE RECORDER &middot; YN21 KVD</div>
+    <div class="clips" id="clips"></div>
+    <div class="reqpanel">
+      <span class="t">Request a clip from the recorder</span>
+      <span class="row"><span class="f"><i>Date</i>20/10/2026</span><span class="f"><i>Channel</i>CH1 Forward</span></span>
+      <span class="row"><span class="f"><i>From</i>07:58:00</span><span class="f"><i>Duration</i>30 seconds</span></span>
+      <span class="go">Queue download</span>
+    </div>
+  </section>
+
+  <!-- ══ 5. Operations ═════════════════════════════════════════════════════ -->
+  <section class="scene" id="sc-ops">
+    <div class="ops"><div class="inner" id="ops"></div></div>
+  </section>
+
+  <!-- ══ 6. Driver app ═════════════════════════════════════════════════════ -->
+  <section class="scene" id="sc-driver">
+    <div class="dbar">
+      <span class="av">R</span>
+      <span class="ti">Walkaround</span>
+      <svg class="ico" viewBox="0 0 24 24"><path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      <svg class="ico" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </div>
+    <div class="listhead" style="padding-left:13px">YN21 KVD &middot; PRE-USE CHECK &middot; 12 ITEMS</div>
+    <div class="checks" id="checks"></div>
+    <div class="sumbar">
+      <span class="s1">0 of 12 checked<b id="ckcount">0 faults</b></span>
+      <span class="s2"><i id="ckbar" style="width:0%"></i></span>
+      <span class="go">Sign and submit check</span>
+    </div>
+    <div class="toast" id="toast">Shift started — complete your pre-use walkaround</div>
+    <div class="bottomnav">
+      <div><svg viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+      <div class="on"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>Checks</div>
+      <div><svg viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>Live</div>
+      <div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Hours</div>
+      <div><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Contacts</div>
+    </div>
+  </section>
+
+  <div class="gesture"></div>
+  <div class="touch" id="touch"></div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// Every registration, driver, place and figure here is invented. Nothing in this
+// file comes from a real fleet; that was the point of replacing the recording.
+// ─────────────────────────────────────────────────────────────────────────────
+const FLEET = [
+  { reg: 'YN21 KVD', state: 'run', speed: 56, who: 'R. Okafor', loc: 'A14 westbound, J38', ago: 'a few seconds ago' },
+  { reg: 'CV22 GLT', state: 'run', speed: 61, who: 'D. Clarke', loc: 'A1(M) southbound, J46', ago: '12 seconds ago' },
+  { reg: 'LT70 HMW', state: 'run', speed: 48, who: 'S. Whitfield', loc: 'M6 northbound, J14', ago: '28 seconds ago' },
+  { reg: 'FD19 PXR', state: 'idl', speed: 0, who: 'A. Novak', loc: 'Marlwood depot', ago: '1 minute ago' },
+  { reg: 'BM23 TFS', state: 'run', speed: 52, who: 'K. Hargreaves', loc: 'M62 eastbound, J26', ago: '3 seconds ago' },
+  { reg: 'RK68 ZBN', state: 'off', speed: 0, who: '—', loc: 'Kingsmoor yard', ago: 'last seen 06:14' },
+];
+
+const CLIPS = [
+  { t: '20/10/2026  07:58:12', ch: 'CH1', dur: '00:30', size: '42.6 MB', p: null },
+  { t: '20/10/2026  07:41:05', ch: 'CH2', dur: '00:30', size: '39.1 MB', p: 1 },
+  { t: '19/10/2026  16:22:48', ch: 'CH1', dur: '01:00', size: '83.4 MB', p: 1 },
+  { t: '19/10/2026  11:09:30', ch: 'CH4', dur: '00:30', size: '40.2 MB', p: 1 },
+];
+
+const MODULES = [
+  { h: 'Licensed · 2026-10', b: '', led: '#e8a33d', p: '11 days remaining in this cycle (renews on the 15th).' },
+  { h: 'Backups OK', b: '', led: '#27c08a', p: 'Last good backup 20 Oct, 02:30 · 812.4 MB · visible to the super administrator only.' },
+  { h: 'Defects', b: '2', p: 'Open defects, severity and rectification audit trail.' },
+  { h: 'Maintenance planner', b: '1 overdue', bc: 'w', p: 'Safety inspections, brake tests, MOT, calibration & LOLER due dates and records.' },
+  { h: 'Walkaround reports', b: '', p: 'Search past checks by date, reg or driver — photos & signatures.' },
+  { h: 'MOT / tax reminders', b: '0', p: 'Auto MOT, tax & Euro status by registration (DVLA/DVSA).' },
+  { h: 'Clean Air Zone', b: '0', p: 'ULEZ/CAZ zone entries & charge exposure.' },
+  { h: 'Tacho compliance', b: '3', p: "Drivers' hours & WTD infringements, downloads, archive." },
+  { h: 'Live tacho', b: 'new', bc: 'g', p: "Who's driving now, time left before breaks & rest, driving without a card, mismatches." },
+  { h: 'Job management', b: '4', p: 'Send & manage driver job assignments — accept/deny workflow.' },
+];
+
+const CHECKS = [
+  { n: 'Lights & indicators', s: 'All working' },
+  { n: 'Tyres & wheels', s: 'Tread and nuts checked' },
+  { n: 'Mirrors & glass', s: 'Clean, undamaged' },
+  { n: 'Brakes & air build', s: 'Photo required' },
+  { n: 'Load security', s: 'Straps and curtain' },
+  { n: 'Fluid levels', s: 'Oil, coolant, screenwash' },
+];
+
+const CHANNELS = ['CH1 FORWARD', 'CH2 CAB', 'CH3 REAR', 'CH4 NEARSIDE'];
+
+// ── Build the lists once ─────────────────────────────────────────────────────
+const vlist = document.getElementById('vlist');
+FLEET.forEach(v => {
+  const el = document.createElement('div');
+  el.className = 'v ' + (v.state === 'run' ? '' : v.state);
+  el.innerHTML = `
+    <span class="vi"><svg viewBox="0 0 24 24"><path d="M3 5h13v10H3zM16 8h3l2 3v4h-5z"/><circle cx="7" cy="17" r="2"/><circle cx="18" cy="17" r="2"/></svg></span>
+    <span>
+      <span class="reg">${v.reg}</span>
+      <span class="st"><b>${v.state === 'run' ? 'RUNNING' : v.state === 'idl' ? 'IDLING' : 'OFFLINE'}</b>
+        <span>· ${v.state === 'off' ? v.ago : v.speed + ' mph · ' + v.ago}</span></span>
+      <span class="loc">◎ ${v.loc}</span>
+    </span>
+    <span class="live"></span>`;
+  vlist.appendChild(el);
+});
+const vEls = [...vlist.children];
+
+const clipsEl = document.getElementById('clips');
+CLIPS.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'clip';
+  el.innerHTML = `
+    <span class="r1"><span class="ch">${c.ch}</span>${c.t}<span class="sz">${c.size}</span></span>
+    <span class="r2">Duration ${c.dur} <span class="status">·</span></span>
+    <span class="bar"><i style="width:0%"></i></span>`;
+  clipsEl.appendChild(el);
+});
+const clipEls = [...clipsEl.children];
+
+const opsEl = document.getElementById('ops');
+MODULES.forEach(m => {
+  const el = document.createElement('div');
+  el.className = 'mod';
+  el.innerHTML = `<h5>${m.led ? `<span class="led" style="background:${m.led}"></span>` : ''}${m.h}
+    ${m.b ? `<b class="${m.bc || ''}">${m.b}</b>` : ''}</h5><p>${m.p}</p>`;
+  opsEl.appendChild(el);
+});
+
+const checksEl = document.getElementById('checks');
+CHECKS.forEach(c => {
+  const el = document.createElement('div');
+  el.className = 'ck';
+  el.innerHTML = `<span class="bx"><svg viewBox="0 0 24 24"><path d="M4 12l5 5L20 6"/></svg></span>
+    <span><span class="nm">${c.n}</span><span class="sub">${c.s}</span></span>
+    <span class="cam"><svg class="ico s" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>`;
+  checksEl.appendChild(el);
+});
+const ckEls = [...checksEl.children];
+
+// Camera cells, each with its own canvas of simulated footage.
+const cellsEl = document.getElementById('cells');
+const cams = [];
+CHANNELS.forEach((name, i) => {
+  const el = document.createElement('div');
+  el.className = 'cell' + (i === 0 ? ' on' : '');
+  el.innerHTML = `<canvas width="156" height="208"></canvas>
+    <span class="tag">${name}</span>${i === 0 ? '<span class="rec"></span>' : ''}
+    <span class="ts"></span>
+    <span class="tools">
+      <svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="3.5"/></svg>
+    </span>`;
+  cellsEl.appendChild(el);
+  cams.push({ el, cv: el.querySelector('canvas'), ts: el.querySelector('.ts'), i });
+});
+
+// ── The map, drawn rather than tiled ─────────────────────────────────────────
+// Invented place names on a generic road layout. No real geography, no tiles.
+function mapSVG() {
+  const lbl = (x, y, t, s, w) => `<text x="${x}" y="${y}" fill="#55705c" font-size="${s}" font-weight="${w||500}" font-family="Roboto, sans-serif">${t}</text>`;
+  const dot = (x, y) => `<circle cx="${x}" cy="${y}" r="2.5" fill="#8aa591"/>`;
+  return `<svg viewBox="0 0 760 760" width="100%" height="100%">
+    <rect width="760" height="760" fill="#eef2e8"/>
+    <!-- fields and woodland, so the ground is not one flat colour -->
+    <g opacity=".85">
+      <path d="M0 0h300v170H0z" fill="#e6ecdd"/>
+      <path d="M300 0h460v120H300z" fill="#e9eee1"/>
+      <path d="M0 520h260v240H0z" fill="#e4ebdb"/>
+      <path d="M470 560h290v200H470z" fill="#e7ede0"/>
+      <circle cx="150" cy="620" r="78" fill="#d4e3cd"/>
+      <circle cx="640" cy="180" r="62" fill="#d7e5d0"/>
+      <circle cx="400" cy="690" r="54" fill="#d4e3cd"/>
+    </g>
+    <!-- river -->
+    <path d="M-20 300 q150 60 300 20 t250 40 t250 -10" stroke="#b9d6e8" stroke-width="11" fill="none" stroke-linecap="round"/>
+    <!-- minor roads: grey casing, white fill -->
+    <g fill="none" stroke-linecap="round">
+      <g stroke="#cfd6c9" stroke-width="7">
+        <path d="M60 40 q120 130 60 270 t40 310"/>
+        <path d="M-20 660 q260 -40 420 30 t380 -20"/>
+        <path d="M700 60 q-80 200 -20 330"/>
+        <path d="M120 240 q140 50 260 10"/>
+      </g>
+      <g stroke="#ffffff" stroke-width="4.5">
+        <path d="M60 40 q120 130 60 270 t40 310"/>
+        <path d="M-20 660 q260 -40 420 30 t380 -20"/>
+        <path d="M700 60 q-80 200 -20 330"/>
+        <path d="M120 240 q140 50 260 10"/>
+      </g>
+    </g>
+    <!-- A-roads -->
+    <g fill="none" stroke-linecap="round">
+      <g stroke="#d8bd7a" stroke-width="13">
+        <path d="M300 -20 q30 240 -40 420 t20 380"/>
+        <path d="M-20 200 q240 70 420 -20 t380 50"/>
+      </g>
+      <g stroke="#f6dd9a" stroke-width="9">
+        <path d="M300 -20 q30 240 -40 420 t20 380"/>
+        <path d="M-20 200 q240 70 420 -20 t380 50"/>
+      </g>
+    </g>
+    <!-- the trunk road the vehicle is on -->
+    <path d="M-20 430 q200 -60 380 -40 t420 -60" stroke="#7aa3d8" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <path d="M-20 430 q200 -60 380 -40 t420 -60" stroke="#aecdee" stroke-width="14" fill="none" stroke-linecap="round"/>
+    <g font-family="Roboto, sans-serif" font-weight="700">
+      <rect x="150" y="406" width="27" height="14" rx="2.5" fill="#3f6fb5"/><text x="154" y="417" fill="#fff" font-size="10">A14</text>
+      <rect x="560" y="356" width="27" height="14" rx="2.5" fill="#3f6fb5"/><text x="564" y="367" fill="#fff" font-size="10">A14</text>
+      <rect x="252" y="560" width="26" height="14" rx="2.5" fill="#caa94e"/><text x="256" y="571" fill="#4a3c10" font-size="10">A6</text>
+    </g>
+    ${dot(118,352)}${lbl(128, 356, 'Marlwood', 13, 700)}
+    ${dot(452,196)}${lbl(462, 200, 'Bredon Cross', 11)}
+    ${dot(596,536)}${lbl(606, 540, 'Netherfold', 11)}
+    ${dot(196,686)}${lbl(206, 690, 'Ashcombe', 11)}
+    ${dot(508,646)}${lbl(518, 650, 'Kingsmoor', 10)}
+    ${dot(76,176)}${lbl(86, 180, 'Harrowfield', 10)}
+    ${dot(664,268)}${lbl(674, 272, 'Oakbarrow', 10)}
+    ${lbl(330, 300, 'Wessex Vale', 10, 400)}
+  </svg>`;
+}
+document.getElementById('map-a').innerHTML = mapSVG();
+document.getElementById('map-b').innerHTML = mapSVG();
+
+// ── Camera footage: a perspective road that moves ────────────────────────────
+function drawCam(c, t) {
+  const g = c.cv.getContext('2d');
+  const W = c.cv.width, H = c.cv.height;
+  const night = c.i === 1;                       // the cab channel is darker
+  const rear = c.i === 2;
+  g.fillStyle = night ? '#0c1016' : '#223040';
+  g.fillRect(0, 0, W, H);
+
+  if (c.i === 1) {
+    // Cab channel: looking back at the driver. A bright windscreen band at the
+    // top with the road moving through it, the dash below, a wheel and a
+    // shoulder — enough shape to read as an interior rather than a dead tile.
+    const band = H * 0.30;
+    const sky = g.createLinearGradient(0, 0, 0, band);
+    sky.addColorStop(0, '#6d7f93'); sky.addColorStop(1, '#8d9cad');
+    g.fillStyle = sky; g.fillRect(0, 0, W, band);
+    // Scenery slipping past the windscreen.
+    for (let k = 0; k < 5; k++) {
+      const p = ((t * 0.5 + k / 5) % 1);
+      g.fillStyle = 'rgba(30,45,35,.55)';
+      g.fillRect(W * (1 - p) * 1.2 - 14, band - 16 - (k % 2) * 7, 11, 16 + (k % 2) * 7);
+    }
+    g.fillStyle = '#2a3340'; g.fillRect(0, band, W, H - band);      // dash
+    g.fillStyle = '#1a212b'; g.fillRect(0, band + 10, W, H - band); // lower dash
+    // Steering wheel.
+    g.strokeStyle = '#11161d'; g.lineWidth = 7;
+    g.beginPath(); g.arc(W * 0.34, H * 0.70, W * 0.21, 0, 7); g.stroke();
+    // Driver: shoulder and head, deliberately indistinct.
+    g.fillStyle = '#232c38';
+    g.beginPath(); g.ellipse(W * 0.40, H * 0.98, W * 0.30, H * 0.20, 0, 0, 7); g.fill();
+    g.beginPath(); g.ellipse(W * 0.40, H * 0.62, W * 0.11, H * 0.09, 0, 0, 7); g.fill();
+    // Instrument glow.
+    g.fillStyle = 'rgba(39,192,138,.5)';
+    g.fillRect(W * 0.60, H * 0.52, W * 0.22, 2);
+    g.fillRect(W * 0.60, H * 0.56, W * 0.14, 2);
+  } else {
+    // Sky / ground / tarmac in perspective, with lane dashes running.
+    const hz = H * (rear ? 0.38 : 0.42);
+    const sky = g.createLinearGradient(0, 0, 0, hz);
+    sky.addColorStop(0, rear ? '#1c2836' : '#2d4256'); sky.addColorStop(1, '#53657a');
+    g.fillStyle = sky; g.fillRect(0, 0, W, hz);
+    g.fillStyle = '#1d2a1f'; g.fillRect(0, hz, W, H - hz);
+    g.fillStyle = '#20252b';
+    g.beginPath(); g.moveTo(W * 0.47, hz); g.lineTo(W * 0.53, hz); g.lineTo(W * 1.15, H); g.lineTo(W * -0.15, H); g.closePath(); g.fill();
+    // Verge lines.
+    g.strokeStyle = 'rgba(200,205,215,.45)'; g.lineWidth = 1.4;
+    g.beginPath(); g.moveTo(W * 0.475, hz); g.lineTo(W * -0.08, H); g.stroke();
+    g.beginPath(); g.moveTo(W * 0.525, hz); g.lineTo(W * 1.08, H); g.stroke();
+    // Dashes: phase scrolls with time, each dash grows toward the camera.
+    const speed = rear ? 0.55 : 0.8;
+    for (let k = 0; k < 7; k++) {
+      let p = ((t * speed + k / 7) % 1);
+      p = p * p;                                  // perspective bunching
+      const y = hz + (H - hz) * p;
+      const w = 1.2 + p * 5, h = 3 + p * 15;
+      g.fillStyle = 'rgba(235,232,220,' + (0.25 + p * 0.6) + ')';
+      g.fillRect(W * 0.5 - w / 2, y, w, h);
+    }
+    if (!rear) {
+      // A sign that drifts past, so the frame is not purely abstract.
+      const sp = ((t * 0.22) % 1);
+      const sy = hz - 14 + sp * 40, ss = 0.4 + sp * 1.5;
+      g.fillStyle = 'rgba(31,95,107,.9)';
+      g.fillRect(W * 0.66 + sp * 40, sy, 26 * ss, 13 * ss);
+    }
+  }
+  // Grain, so it reads as a cheap sensor rather than a vector drawing.
+  const n = g.createImageData(W, H), d = n.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const v = 128 + (Math.random() - 0.5) * 36;
+    d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 16;
+  }
+  g.putImageData === undefined || g.globalCompositeOperation === null;
+  const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H;
+  tmp.getContext('2d').putImageData(n, 0, 0);
+  g.globalAlpha = 0.5; g.drawImage(tmp, 0, 0); g.globalAlpha = 1;
+  // Vignette.
+  const vg = g.createRadialGradient(W / 2, H / 2, W * 0.2, W / 2, H / 2, W * 0.8);
+  vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.45)');
+  g.fillStyle = vg; g.fillRect(0, 0, W, H);
+}
+
+// ── Timeline ─────────────────────────────────────────────────────────────────
+const SCENES = [
+  { id: 'sc-dash',   a: 0.0,  b: 8.0 },
+  { id: 'sc-map',    a: 8.0,  b: 16.5 },
+  { id: 'sc-cam',    a: 16.5, b: 27.5 },
+  { id: 'sc-dl',     a: 27.5, b: 33.5 },
+  { id: 'sc-ops',    a: 33.5, b: 41.0 },
+  { id: 'sc-driver', a: 41.0, b: 48.0 },
+];
+const DURATION = 48;
+const FADE = 0.35;
+
+// Taps, as [time, x, y] — placed where the tour would actually press.
+const TAPS = [
+  [6.3, 300, 102], [14.6, 180, 420], [25.8, 300, 70], [32.0, 300, 70], [39.4, 180, 500], [46.0, 180, 300],
+];
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const ease = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const two = n => String(Math.floor(n)).padStart(2, '0');
+
+function seek(t) {
+  t = clamp(t, 0, DURATION);
+
+  // Clock in the status bar, ticking forward from 08:12:44.
+  const base = 8 * 3600 + 12 * 60 + 44 + t;
+  document.getElementById('clock').textContent = two(base / 3600) + ':' + two((base / 60) % 60);
+
+  // Scene visibility, cross-fading at the joins.
+  for (const s of SCENES) {
+    const el = document.getElementById(s.id);
+    let o = 0;
+    if (t >= s.a - FADE && t <= s.b) {
+      o = t < s.a ? (t - (s.a - FADE)) / FADE : 1;
+      if (t > s.b - FADE) o = Math.min(o, (s.b - t) / FADE);
+    }
+    el.style.opacity = clamp(o).toFixed(3);
+    el.style.zIndex = o > 0 ? 10 : 0;
+  }
+
+  // 1 ── Dashboard: counters run up, chips settle, the list staggers in.
+  {
+    const k = clamp(t / 1.3);
+    const e = ease(k);
+    document.getElementById('n-all').textContent = Math.round(18 * e);
+    document.getElementById('n-run').textContent = Math.round(6 * e);
+    document.getElementById('n-idl').textContent = Math.round(2 * e);
+    document.getElementById('n-off').textContent = Math.round(10 * e);
+    // "Running" is pressed at 6.3s, so the list filters down to the six.
+    const filtered = t > 6.45;
+    document.getElementById('ch-all').classList.toggle('on', !filtered);
+    document.getElementById('ch-run').classList.toggle('on', filtered);
+    document.getElementById('listhead').textContent = filtered ? 'VEHICLES (4 / 18)' : 'VEHICLES (6 / 18)';
+    vEls.forEach((el, i) => {
+      const inAt = 1.0 + i * 0.16;
+      let o = clamp((t - inAt) / 0.42);
+      const hide = filtered && FLEET[i].state !== 'run';
+      if (hide) o *= clamp(1 - (t - 6.45) / 0.3);
+      el.style.opacity = o.toFixed(3);
+      el.style.transform = `translateY(${(1 - ease(o)) * 7}px)`;
+      el.style.height = hide && t > 6.75 ? '0px' : '';
+      el.style.marginBottom = hide && t > 6.75 ? '-7px' : '';
+    });
+  }
+
+  // 2 ── Map: the vehicle runs along the trunk road, popup opens at 11.2s.
+  {
+    const lt = t - 8;
+    const p = clamp(lt / 8.5);
+    // Drift the map under the marker, and ease the marker along its path.
+    const mx = -60 + p * 120;
+    document.getElementById('map-a').style.transform = `translate(${-mx}px, ${p * 26 - 13}px)`;
+    const px = 95 + p * 150, py = 300 - p * 40;
+    const mk = document.getElementById('mmark'), lb = document.getElementById('mlab');
+    mk.style.left = px + 'px'; mk.style.top = py + 'px';
+    lb.style.left = px + 'px'; lb.style.top = (py - 26) + 'px';
+    const spd = 56 + Math.sin(lt * 0.9) * 3;
+    lb.innerHTML = `YN21 KVD<span>${spd.toFixed(0)} mph</span>`;
+    document.getElementById('popspeed').textContent = spd.toFixed(1) + ' mph';
+    const sec = 44 + lt;
+    document.getElementById('fixtime').textContent =
+      `20/10/2026, 08:${two(12 + sec / 60)}:${two(sec % 60)}`;
+    const po = clamp((lt - 3.2) / 0.5);
+    const pop = document.getElementById('popup');
+    pop.style.opacity = po.toFixed(3);
+    pop.style.transform = `translateY(${(1 - ease(po)) * 10}px)`;
+  }
+
+  // 3 ── Cameras: four channels running, the timestamp counting.
+  {
+    const ct = t - 16.5;
+    cams.forEach(c => {
+      drawCam(c, ct + c.i * 3.1);
+      const sec = 44 + ct + 8.5;
+      c.ts.textContent = `20/10/2026 08:${two(12 + sec / 60)}:${two(sec % 60)}`;
+      // The selected channel switches to CH2 when the dropdown is used.
+      const sel = ct > 9.3 ? 1 : 0;
+      c.el.classList.toggle('on', c.i === sel);
+    });
+    const strip = document.getElementById('map-b');
+    strip.style.transform = `translate(${-ct * 7}px, ${ct * 2}px)`;
+  }
+
+  // 4 ── Download: the top clip pulls down with a progress bar.
+  {
+    const dt = t - 27.5;
+    clipEls.forEach((el, i) => {
+      const c = CLIPS[i];
+      const bar = el.querySelector('.bar i');
+      const st = el.querySelector('.status');
+      const prog = c.p === null ? clamp((dt - 1.1) / 3.6) : 1;
+      bar.style.width = (prog * 100).toFixed(1) + '%';
+      if (c.p === null) {
+        st.textContent = prog >= 1 ? '· Downloaded' : `· Downloading ${(prog * 100).toFixed(0)}%`;
+        st.className = 'status' + (prog >= 1 ? ' done' : '');
+      } else { st.textContent = '· On device'; st.className = 'status done'; }
+    });
+  }
+
+  // 5 ── Operations: the list scrolls itself.
+  {
+    const ot = clamp((t - 33.5) / 7.5);
+    const inner = document.getElementById('ops');
+    const max = Math.max(0, inner.scrollHeight - 740);
+    inner.style.transform = `translateY(${-ease(ot) * max}px)`;
+    // Highlight whichever card is nearest the middle of the screen.
+    [...inner.children].forEach(el => {
+      const mid = el.offsetTop - ease(ot) * max + el.offsetHeight / 2;
+      el.classList.toggle('hl', Math.abs(mid - 330) < 55);
+    });
+  }
+
+  // 6 ── Driver app: the toast lands, then the checks tick over one by one.
+  {
+    const dt = t - 41;
+    const to = document.getElementById('toast');
+    const ta = clamp(dt / 0.4) * clamp((3.4 - dt) / 0.5);
+    to.style.opacity = clamp(ta).toFixed(3);
+    to.style.transform = `translateX(-50%) translateY(${(1 - clamp(dt / 0.4)) * 10}px)`;
+    let done = 0;
+    ckEls.forEach((el, i) => {
+      const at = 1.6 + i * 0.85;
+      if (dt > at) done++;
+      el.classList.toggle('done', dt > at);
+      el.classList.toggle('cur', dt > at - 0.85 && dt <= at);
+    });
+    document.getElementById('ckbar').style.width = (done / 12 * 100).toFixed(1) + '%';
+    document.querySelector('.sumbar .s1').firstChild.textContent = `${done} of 12 checked`;
+  }
+
+  // The touch blob.
+  const tc = document.getElementById('touch');
+  let shown = false;
+  for (const [at, x, y] of TAPS) {
+    const d = t - at;
+    if (d >= -0.12 && d < 0.55) {
+      const k = clamp((d + 0.12) / 0.67);
+      tc.style.left = x / 3 + 'px'; tc.style.top = y / 3 + 'px';
+      tc.style.opacity = (1 - k).toFixed(3);
+      tc.style.transform = `translate(-50%,-50%) scale(${(0.4 + k * 1.1).toFixed(3)})`;
+      shown = true;
+    }
+  }
+  if (!shown) tc.style.opacity = '0';
+}
+
+window.__seek = seek;
+window.__duration = DURATION;
+seek(0);
+
+// Live preview when opened by hand, so the thing can be eyeballed before capture.
+if (!location.search.includes('static')) {
+  const t0 = performance.now();
+  const loop = () => { seek(((performance.now() - t0) / 1000) % DURATION); requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
