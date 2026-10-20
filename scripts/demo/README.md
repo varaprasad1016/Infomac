@@ -1,6 +1,6 @@
 # The platform demo video
 
-`public/assets/platform-demo.mp4` is **generated, not recorded.** This folder is what
+`src/media/platform-demo.mp4` is **generated, not recorded.** This folder is what
 generates it.
 
 The site used to ship a genuine screen recording of the platform running on a live fleet.
@@ -18,7 +18,7 @@ from a map provider, and it is labelled "Demo map" so nobody mistakes it for sur
 ```bash
 cd scripts/demo
 npm install
-npm run record          # ~3 minutes, writes ../../public/assets/platform-demo.mp4
+npm run record          # ~3 minutes, writes ../../src/media/platform-demo.mp4
 ```
 
 It drives the Chrome or Edge already installed on the machine (hence `playwright-core`

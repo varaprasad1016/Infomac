@@ -1,4 +1,4 @@
-// Renders demo.html frame by frame and encodes public/assets/platform-demo.mp4.
+// Renders demo.html frame by frame and encodes src/media/platform-demo.mp4.
 //
 // The page exposes window.__seek(t), so capture is deterministic: there is no
 // reliance on wall-clock animation, and re-running this produces the same video
@@ -18,7 +18,7 @@ import path from 'node:path';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const FRAMES = path.join(here, 'frames');
-const OUT = path.resolve(here, '../../public/assets/platform-demo.mp4');
+const OUT = path.resolve(here, '../../src/media/platform-demo.mp4');
 
 const FPS = 25;
 // 360x840 at a device scale of 3 is 1080x2520 — the shape of the recording this

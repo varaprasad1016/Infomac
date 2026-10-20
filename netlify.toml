@@ -1,6 +1,5 @@
 # The 3D hero needs a bundler: three.js, postprocessing and n8ao ship as bare ES
-# modules a browser cannot resolve. Vite builds to dist/ and fingerprints its
-# own output; everything in public/ is copied through at the same path.
+# modules a browser cannot resolve. Vite builds to dist/.
 [build]
   publish = "dist"
   command = "npm run build"
@@ -8,12 +7,24 @@
 [build.environment]
   NODE_VERSION = "22"
 
-# Everything Vite emits into /assets is content-addressed — the hashed JS and
-# CSS, and the video and icon copied from public/assets, which change rarely.
+# /assets holds *only* Vite's own output, and every file in it carries a content
+# hash in its name — including the demo video, which is referenced from the
+# markup and so gets fingerprinted. A changed file is therefore a changed URL,
+# which is the only safe reason to say "immutable".
+#
+# Nothing with a stable filename may live here. Marking a fixed URL immutable
+# pins it in every browser and in the CDN for a year, and no amount of reloading
+# gets the new file.
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# Fixed URLs, copied through from public/ untouched. Cached, but revalidated.
+[[headers]]
+  for = "/brand/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, must-revalidate"
 
 # The page itself must not be cached hard, or an edit takes a day to appear.
 [[headers]]

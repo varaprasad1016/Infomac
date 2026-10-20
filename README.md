@@ -36,12 +36,19 @@ folder onto the dashboard no longer works — it needs the build.
 | `src/site/hero.css` | Styling for the canvas, markers and readout cards |
 | `src/core/` | The Dioramas engine, vendored. Fix bugs upstream, not here |
 | `scripts/demo/` | Generates the walkthrough video. Its deps are its own, not the site's |
-| `public/assets/platform-demo.mp4` | The platform walkthrough — generated, not recorded (see `scripts/demo/`) |
-| `public/assets/app-icon-512.png` | White-label app icon, for store listings or a favicon |
+| `src/media/platform-demo.mp4` | The platform walkthrough — generated, not recorded (see `scripts/demo/`) |
+| `public/brand/app-icon-512.png` | White-label app icon, for store listings or a favicon |
 | `netlify.toml` | Build, publish and cache headers |
 
-Anything in `public/` is copied to the site root untouched, so the video stays at
-`/assets/platform-demo.mp4`.
+Anything in `public/` is copied to the site root untouched and keeps a fixed URL, so the
+icon stays at `/brand/app-icon-512.png`.
+
+The video is **not** in `public/`. It is referenced from the markup, so Vite fingerprints
+it into `/assets/platform-demo-<hash>.mp4`. That matters: `/assets/*` is served
+`immutable` for a year, which is only safe because every name in there changes when its
+contents do. A stable filename under `/assets` would pin the old file in every browser and
+in Netlify's CDN, and no reload would shift it — which is exactly what happened the first
+time the demo video was replaced.
 
 ## The hero
 
@@ -81,7 +88,7 @@ beams are turned off below 860px, and the pixel ratio is capped.
 - **`hello@infomacsolutions.co.uk` is a placeholder.** Replace it with a real address, and
   with a phone number if you want one.
 - **No favicon or Open Graph image yet.** A link shared on WhatsApp or LinkedIn will show
-  nothing. `public/assets/app-icon-512.png` is a reasonable favicon; a 1200x630 share image
+  nothing. `public/brand/app-icon-512.png` is a reasonable favicon; a 1200x630 share image
   needs making.
 - **The old recording is still in git history.** The genuine capture of a live fleet was
   replaced (see `scripts/demo/`), but the original is still reachable in earlier commits on
